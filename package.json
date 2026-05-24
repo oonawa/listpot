@@ -9,7 +9,7 @@
 		"lint": "biome lint --write .",
 		"format": "biome format --write .",
 		"test": "vitest",
-		"test:e2e": "playwright test",
+		"test:e2e": "npm run build && playwright test",
 		"db:seed": "tsx db/seed.ts",
 		"db:push": "drizzle-kit migrate",
 		"db:generate": "drizzle-kit generate",

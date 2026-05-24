@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import type { ListItem } from "@/features/list/types/ListItem";
 
 export const LOCAL_STORAGE_KEY = "risutopotto";
@@ -12,10 +12,25 @@ export type RisutopottoStorage = {
 	subLists: { subListId: string; name: string; listItemIds: string[] }[];
 };
 
+const ISO_DATE_RE =
+	/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+const isoDateReviver = (_key: string, value: unknown): unknown => {
+	if (typeof value === "string" && ISO_DATE_RE.test(value)) {
+		return new Date(value);
+	}
+	return value;
+};
+
+const storage = createJSONStorage<RisutopottoStorage>(
+	() => globalThis.localStorage,
+	{ reviver: isoDateReviver },
+);
+
 export const risutopottoAtom = atomWithStorage<RisutopottoStorage>(
 	LOCAL_STORAGE_KEY,
 	{ list: { listId: "", items: [] }, subLists: [] },
-	undefined,
+	storage,
 	{
 		getOnInit: true,
 	},

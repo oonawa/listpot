@@ -22,9 +22,7 @@ export default defineConfig({
 			reuseExistingServer: !process.env.CI,
 		},
 		{
-			command: process.env.CI
-				? "npm run build && npx dotenv-cli -e .env.test -- npm run start -- -p 3001"
-				: "npx dotenv-cli -e .env.test -- npm run start -- -p 3001",
+			command: "npx dotenv-cli -e .env.test -- npm run start -- -p 3001",
 			url: "http://localhost:3001",
 			reuseExistingServer: !process.env.CI,
 			timeout: 180_000,

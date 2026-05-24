@@ -10,6 +10,14 @@ allowed-tools: Bash(npm run *) Bash(npx *) Bash(ls *) Bash(git *)
 
 `engineer-sonnet` が 3 回の試みで解決できなかった問題を引き受け、解決する。
 
+## ワークログ運用（必須）
+
+- **既存ログを引き継ぐ**: `.claude/agents-worklog/engineer-sonnet-*.md` に未削除のログがあれば、それを Read で確認し Sonnet が試みた経緯を把握する
+- **自分のログ**: `.claude/agents-worklog/engineer-opus-<ISO日時>.md` を新規作成して節目を記録する
+- **追記タイミング**: 根本原因の特定時、解決策の決定時、テスト green になった時、完了直前
+- **フォーマット**: `## [HH:MM:SS] <種別>` 見出し＋本文 1〜3 行
+- **完了時**: 自分のログと、引き継いだ Sonnet のログの両方を削除する
+
 ## 規約・方針の参照先
 
 実装時は必ず以下のドキュメントを参照すること：

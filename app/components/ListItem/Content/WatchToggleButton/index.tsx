@@ -41,6 +41,7 @@ export default function WatchToggleButton({
 				<span
 					className={`text-sm font-bold text-foreground-dark-1 ${styles.label}`}
 					data-watched={isWatched ? "true" : "false"}
+					data-testid="watch-toggle-label"
 				>
 					{isWatched ? "観た！" : "もう観た？"}
 				</span>
