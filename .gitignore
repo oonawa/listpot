@@ -62,3 +62,4 @@ certificates
 TODO.md
 
 .claude/settings.json
+.claude/agents-worklog/

@@ -32,7 +32,7 @@ jsdom 環境では `useOptimistic` / `useTransition` の非同期スケジュー
 - デバイスカバレッジは `playwright.config.ts` の 5 プロジェクト（iPhone / Pixel 7 / Desktop Chrome / Firefox / Safari）に対応し、各テストは `test.skip` で対象プロジェクトを絞る。
 - `beforeEach` で `resetDatabase()` + `seedDatabase()`、`afterEach` で `resetDatabase()` を呼ぶ。
 - 認証が必要なテストは `setupAuthenticatedUser()` を使う。
-- テスト実行は `npx playwright test`（全テスト）または `npx playwright test <ファイル>` で行う。
+- テスト実行は `npm run test:e2e`（ビルド込み、デフォルト）で行う。古いビルドを掴む罠を避けるため、特別な理由がない限りこちらを使う。テストコードだけ反復したい時は自分の責任で `npx playwright test <ファイル>` を使ってよい。
 
 ## セットアップ
 

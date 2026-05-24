@@ -46,7 +46,7 @@ export default function SubListTabBar({
 			<div
 				ref={scrollRef}
 				data-testid="sublist-tab-bar"
-				className="relative flex items-center gap-3 overflow-x-auto px-4 sm:px-9 pt-8 pb-2 hidden-scrollbar"
+				className="max-w-6xl mx-auto relative flex items-center gap-3 overflow-x-auto px-4 sm:px-9 pt-8 pb-2 hidden-scrollbar"
 				style={{
 					maskImage:
 						"linear-gradient(to right, black calc(100% - 20px), transparent 100%)",

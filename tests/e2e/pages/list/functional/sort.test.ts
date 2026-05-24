@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { eq } from "drizzle-orm";
+import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 import {
 	listItemMovieMatchTable,
 	listItemsTable,
@@ -111,13 +112,13 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await expect(page.getByText("追加日")).toBeVisible();
 		await expect(page.getByText("公開日")).toBeVisible();
 		await expect(page.getByText("再生時間")).toBeVisible();
 	});
 
-	test("createdAt_desc が選択中のとき、ソートボタンを開くと1階層目「追加日」にハイライトが付いている（全プロジェクト）", async ({
+	test("初期表示ではソートボタンを開くと「追加日」にハイライトが付いている（全プロジェクト）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -125,10 +126,10 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=createdAt_desc`);
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		const highlightedTrigger = page.locator("[data-group-active='true']");
 		await expect(highlightedTrigger).toBeVisible();
 		await expect(highlightedTrigger).toHaveText("追加日");
@@ -152,7 +153,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("追加日").hover();
 		await expect(page.getByText("新しい順")).toBeVisible();
 		await expect(page.getByText("古い順")).toBeVisible();
@@ -172,7 +173,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("公開日").hover();
 		await expect(page.getByText("新しい順")).toBeVisible();
 		await expect(page.getByText("古い順")).toBeVisible();
@@ -192,13 +193,13 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("再生時間").hover();
 		await expect(page.getByText("長い順")).toBeVisible();
 		await expect(page.getByText("短い順")).toBeVisible();
 	});
 
-	test("「追加日 → 古い順」を選択するとURLに ?sort=createdAt_asc が付く", async ({
+	test("「追加日 → 古い順」を選択するとリストが追加日昇順で並び替わる（URL 変化なし）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -212,13 +213,19 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("追加日").hover();
 		await page.getByText("古い順").click();
-		await expect(page).toHaveURL(/sort=createdAt_asc/);
+
+		// URL に sort パラメータが付かないことを確認
+		await expect(page).not.toHaveURL(/sort=/);
+
+		// リストが追加日昇順（映画A が先）で並び替わることを確認
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画A");
 	});
 
-	test("「公開日 → 新しい順」を選択するとURLに ?sort=releaseDate_desc が付く", async ({
+	test("「公開日 → 新しい順」を選択するとリストが公開日降順で並び替わる（URL 変化なし）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -232,13 +239,19 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("公開日").hover();
 		await page.getByText("新しい順").click();
-		await expect(page).toHaveURL(/sort=releaseDate_desc/);
+
+		// URL に sort パラメータが付かないことを確認
+		await expect(page).not.toHaveURL(/sort=/);
+
+		// リストが公開日降順（映画B が先）で並び替わることを確認
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画B");
 	});
 
-	test("「再生時間 → 長い順」を選択するとURLに ?sort=runningMinutes_desc が付く", async ({
+	test("「再生時間 → 長い順」を選択するとリストが再生時間降順で並び替わる（URL 変化なし）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -252,28 +265,43 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("再生時間").hover();
 		await page.getByText("長い順").click();
-		await expect(page).toHaveURL(/sort=runningMinutes_desc/);
+
+		// URL に sort パラメータが付かないことを確認
+		await expect(page).not.toHaveURL(/sort=/);
+
+		// リストが再生時間降順（映画B: 120分 が先）で並び替わることを確認
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画B");
 	});
 
 	// ──────────────────────────────────────────────
 	// ハイライト - 全プロジェクト対象
 	// ──────────────────────────────────────────────
 
-	test("runningMinutes_desc 適用中でドロップダウンを開くと「再生時間」トリガーにハイライトが付く（全プロジェクト）", async ({
+	test("「再生時間 → 長い順」を選択後にドロップダウンを再度開くと「再生時間」トリガーにハイライトが付く（全プロジェクト）", async ({
 		page,
 		context,
 	}, testInfo) => {
+		if (testInfo.project.name.startsWith("mobile")) {
+			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
+		}
 		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=runningMinutes_desc`);
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		// まず「再生時間 → 長い順」を選択
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").hover();
+		await page.getByText("長い順").click();
+
+		// 再度ドロップダウンを開いてハイライトを確認
+		await page.getByTestId("sort-button-trigger").click();
 		const highlightedTrigger = page.locator("[data-group-active='true']");
 		await expect(highlightedTrigger).toBeVisible();
 		await expect(highlightedTrigger).toHaveText("再生時間");
@@ -290,7 +318,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		const highlightedTrigger = page.locator("[data-group-active='true']");
 		await expect(highlightedTrigger).toBeVisible();
 		await expect(highlightedTrigger).toHaveText("追加日");
@@ -300,7 +328,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 	// ハイライト - デスクトップのみ（ホバー操作を使用）
 	// ──────────────────────────────────────────────
 
-	test("runningMinutes_desc 適用中でサブメニューを開くと「長い順」にハイライトが付く（デスクトップのみ）", async ({
+	test("「再生時間 → 長い順」を選択後にサブメニューを開くと「長い順」にハイライトが付く（デスクトップのみ）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -311,17 +339,23 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=runningMinutes_desc`);
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		// まず「再生時間 → 長い順」を選択
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").hover();
+		await page.getByText("長い順").click();
+
+		// 再度ドロップダウンを開いてサブメニューを確認
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("再生時間").hover();
 		const highlightedItem = page.locator("[data-item-active='true']");
 		await expect(highlightedItem).toBeVisible();
 		await expect(highlightedItem).toHaveText("長い順");
 	});
 
-	test("「追加日」トリガーにホバーすると「追加日」にハイライトが付き「再生時間」からは消える（デスクトップのみ）", async ({
+	test("「追加日」トリガーにホバーすると「追加日」にハイライトが付く（デスクトップのみ）", async ({
 		page,
 		context,
 	}, testInfo) => {
@@ -332,10 +366,15 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=runningMinutes_desc`);
+		// 「再生時間 → 長い順」を選択してから確認
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").hover();
+		await page.getByText("長い順").click();
+
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("追加日").hover();
 		const highlightedTrigger = page.locator("[data-group-active='true']");
 		await expect(highlightedTrigger).toBeVisible();
@@ -353,17 +392,22 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=runningMinutes_desc`);
+		// 「再生時間 → 長い順」を選択してから確認
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").hover();
+		await page.getByText("長い順").click();
+
 		// ドロップダウンを開いて「追加日」にホバー
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("追加日").hover();
 		// ドロップダウンを閉じて再度開くことで hoveredGroupKey がリセットされ、activeSortKey のハイライトが復活する
 		await page.keyboard.press("Escape");
 		// Escape後、マウスをドロップダウン外へ明示的に退避させてから再オープン
 		await page.mouse.move(0, 0);
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		const highlightedTrigger = page.locator("[data-group-active='true']");
 		await expect(highlightedTrigger).toBeVisible();
 		await expect(highlightedTrigger).toHaveText("再生時間");
@@ -380,10 +424,15 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}?sort=runningMinutes_desc`);
+		// 「再生時間 → 長い順」を選択してから確認
+		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").hover();
+		await page.getByText("長い順").click();
+
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("再生時間").hover();
 		await page.getByText("短い順").hover();
 		const highlightedItem = page.locator("[data-item-active='true']");
@@ -405,7 +454,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("追加日").hover();
 		const highlightedItem = page.locator("[data-item-active='true']");
 		await expect(highlightedItem).toBeVisible();
@@ -426,7 +475,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("公開日").hover();
 		// 公開日サブメニューが開くのを待つ
 		const releaseDateSubMenu = page.getByRole("menu", { name: "公開日" });
@@ -457,11 +506,10 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
-		// ソート未適用なのでデフォルト(createdAt_desc)が適用されている
 		await page.goto(`/${list.publicId}`);
 		await expect(page.getByText("映画A")).toBeVisible();
 
-		await page.getByRole("button", { name: "並べ替え" }).click();
+		await page.getByTestId("sort-button-trigger").click();
 		await page.getByText("公開日").hover();
 		const releaseDateSubMenu = page.getByRole("menu", { name: "公開日" });
 		await expect(releaseDateSubMenu).toBeVisible();
@@ -472,5 +520,174 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		const allHighlightedTriggers = page.locator("[data-group-active='true']");
 		await expect(allHighlightedTriggers).toHaveCount(1);
 		await expect(allHighlightedTriggers).toHaveText("公開日");
+	});
+
+	// ──────────────────────────────────────────────
+	// ゲストユーザー（localStorage）- 全プロジェクト対象
+	// ──────────────────────────────────────────────
+
+	test("ゲスト: 「追加日 → 古い順」を選択するとリストが追加日昇順で並び替わる", async ({
+		page,
+	}) => {
+		const listId = crypto.randomUUID();
+		const itemA = {
+			listItemId: crypto.randomUUID(),
+			title: "映画A",
+			url: "https://example.com/a",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-01-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+		};
+		const itemB = {
+			listItemId: crypto.randomUUID(),
+			title: "映画B",
+			url: "https://example.com/b",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-03-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+		};
+		await seedLocalStorageViaInitScript(page, {
+			list: { listId, items: [itemA, itemB] },
+			subLists: [],
+		});
+		await page.goto(`/${listId}`);
+		await expect(page.locator("h2", { hasText: "映画A" })).toBeVisible();
+
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("追加日").click();
+		await page.getByText("古い順").click();
+
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画A");
+	});
+
+	test("ゲスト: 「公開日 → 新しい順」を選択するとリストが公開日降順で並び替わる", async ({
+		page,
+	}) => {
+		const listId = crypto.randomUUID();
+		const itemA = {
+			listItemId: crypto.randomUUID(),
+			title: "映画A",
+			url: "https://example.com/a",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-01-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+			details: {
+				movieId: 1,
+				officialTitle: "映画A",
+				backgroundImage: "https://example.com/bg-a.jpg",
+				posterImage: "https://example.com/poster-a.jpg",
+				director: [],
+				runningMinutes: 90,
+				releaseYear: 2023,
+				releaseDate: "2023-06-01",
+				externalDatabaseMovieId: 1,
+				overview: "概要A",
+			},
+		};
+		const itemB = {
+			listItemId: crypto.randomUUID(),
+			title: "映画B",
+			url: "https://example.com/b",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-03-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+			details: {
+				movieId: 2,
+				officialTitle: "映画B",
+				backgroundImage: "https://example.com/bg-b.jpg",
+				posterImage: "https://example.com/poster-b.jpg",
+				director: [],
+				runningMinutes: 120,
+				releaseYear: 2024,
+				releaseDate: "2024-01-01",
+				externalDatabaseMovieId: 2,
+				overview: "概要B",
+			},
+		};
+		await seedLocalStorageViaInitScript(page, {
+			list: { listId, items: [itemA, itemB] },
+			subLists: [],
+		});
+		await page.goto(`/${listId}`);
+		await expect(page.locator("h2", { hasText: "映画A" })).toBeVisible();
+
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("公開日").click();
+		await page.getByText("新しい順").click();
+
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画B");
+	});
+
+	test("ゲスト: 「再生時間 → 長い順」を選択するとリストが再生時間降順で並び替わる", async ({
+		page,
+	}) => {
+		const listId = crypto.randomUUID();
+		const itemA = {
+			listItemId: crypto.randomUUID(),
+			title: "映画A",
+			url: "https://example.com/a",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-01-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+			details: {
+				movieId: 1,
+				officialTitle: "映画A",
+				backgroundImage: "https://example.com/bg-a.jpg",
+				posterImage: "https://example.com/poster-a.jpg",
+				director: [],
+				runningMinutes: 90,
+				releaseYear: 2023,
+				releaseDate: "2023-06-01",
+				externalDatabaseMovieId: 1,
+				overview: "概要A",
+			},
+		};
+		const itemB = {
+			listItemId: crypto.randomUUID(),
+			title: "映画B",
+			url: "https://example.com/b",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: "2024-03-01T00:00:00.000Z",
+			isWatched: false,
+			watchedAt: null,
+			details: {
+				movieId: 2,
+				officialTitle: "映画B",
+				backgroundImage: "https://example.com/bg-b.jpg",
+				posterImage: "https://example.com/poster-b.jpg",
+				director: [],
+				runningMinutes: 120,
+				releaseYear: 2024,
+				releaseDate: "2024-01-01",
+				externalDatabaseMovieId: 2,
+				overview: "概要B",
+			},
+		};
+		await seedLocalStorageViaInitScript(page, {
+			list: { listId, items: [itemA, itemB] },
+			subLists: [],
+		});
+		await page.goto(`/${listId}`);
+		await expect(page.locator("h2", { hasText: "映画A" })).toBeVisible();
+
+		await page.getByTestId("sort-button-trigger").click();
+		await page.getByText("再生時間").click();
+		await page.getByText("長い順").click();
+
+		const items = page.locator("h2");
+		await expect(items.first()).toHaveText("映画B");
 	});
 });
