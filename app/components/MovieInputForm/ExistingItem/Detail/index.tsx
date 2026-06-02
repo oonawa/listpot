@@ -1,5 +1,6 @@
 import { formatRelativeDate } from "@/lib/date";
 import type { ListItem } from "@/features/list/types/ListItem";
+import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 
 type Props = {
 	movie: ListItem;
@@ -14,16 +15,19 @@ export default function ExistingListItemDetail({ movie }: Props) {
 						<div className="flex justify-center h-full aspect-square py-2">
 							<img
 								className="object-contain h-full rounded-sm"
-								src={movie.details.posterImage}
+								src={withTmdbImageSize(movie.details.posterImage, "w342")}
 								alt=""
+								decoding="async"
+								fetchPriority="high"
 							/>
 						</div>
 					</div>
 					<div className="w-full aspect-video rounded-xl">
 						<img
 							className="w-full h-full object-cover rounded-xl"
-							src={movie.details.backgroundImage}
+							src={withTmdbImageSize(movie.details.backgroundImage, "w780")}
 							alt=""
+							decoding="async"
 						/>
 					</div>
 				</div>
