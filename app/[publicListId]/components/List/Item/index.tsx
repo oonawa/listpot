@@ -36,7 +36,10 @@ type GuestProps = {
 
 type Props = LoggedInProps | GuestProps;
 
-const formatDateLabel = (movie: ListItem, sortKey: SortKey | undefined): string => {
+const formatDateLabel = (
+	movie: ListItem,
+	sortKey: SortKey | undefined,
+): string => {
 	if (sortKey === "releaseDate") {
 		if (movie.details?.releaseDate) {
 			return formatFullDate(new Date(movie.details.releaseDate));
@@ -49,11 +52,6 @@ const formatDateLabel = (movie: ListItem, sortKey: SortKey | undefined): string 
 			return `${movie.details.runningMinutes}分`;
 		}
 		return "";
-	}
-
-	// createdAt（デフォルト）
-	if (sortKey === "createdAt") {
-		return formatFullDate(movie.createdAt);
 	}
 
 	return `${formatRelativeDate(movie.createdAt)}に追加`;
@@ -135,13 +133,13 @@ export default function Item(props: Props) {
 						alt=""
 					/>
 				</div>
-				<div className="flex w-full rounded-b-2x pt-4 sm:pt-2 justify-between">
-					<div className="flex gap-2">
-						<div>
-							<span className="p-2 bg-background-dark-1 rounded-md font-bold text-foreground-dark-1 text-xs whitespace-nowrap">
-								{movie.serviceName}
-							</span>
-						</div>
+				<div className="flex gap-2 w-full rounded-b-2x pt-4 sm:pt-2">
+					<div>
+						<span className="p-2 bg-background-dark-1 rounded-md font-bold text-foreground-dark-1 text-xs whitespace-nowrap">
+							{movie.serviceName}
+						</span>
+					</div>
+					
 						<div className="flex flex-col gap-1">
 							<h2 className="text-sm font-bold line-clamp-2 min-w-0 w-full">
 								{movie.title}
@@ -155,13 +153,15 @@ export default function Item(props: Props) {
 								<p className="text-xs text-foreground-dark-2">{dateLabel}</p>
 							</div>
 						</div>
+					
+					<div className="flex flex-1 justify-end">
+						<Button
+							className="has-[>svg]:p-0 text-foreground-dark-1 h-6"
+							onClick={() => setIsDrawerOpen(true)}
+						>
+							<MoreIcon className="size-6" />
+						</Button>
 					</div>
-					<Button
-						className="has-[>svg]:p-0 text-foreground-dark-1 h-6"
-						onClick={() => setIsDrawerOpen(true)}
-					>
-						<MoreIcon className="size-6" />
-					</Button>
 				</div>
 			</div>
 		</div>

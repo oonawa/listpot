@@ -16,17 +16,15 @@ type Props = {
 	params: Promise<{
 		publicListId: string;
 	}>;
-	searchParams: Promise<{ sort?: string }>;
 };
 
-export default async function ListPage({ params, searchParams }: Props) {
+export default async function ListPage({ params }: Props) {
 	const { publicListId } = await params;
-	const { sort } = await searchParams;
 
 	const result = await currentUserId();
 
 	if (!result.success) {
-		return <LocalList publicListId={publicListId} sort={sort} />;
+		return <LocalList publicListId={publicListId} />;
 	}
 
 	const moviesResult = await getUserMovieList(publicListId, result.data.userId);
@@ -49,7 +47,6 @@ export default async function ListPage({ params, searchParams }: Props) {
 			items={items}
 			publicListId={publicListId}
 			userId={result.data.userId}
-			sort={sort}
 		/>
 	);
 }

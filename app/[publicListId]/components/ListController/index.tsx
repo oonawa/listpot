@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
-import { useAtomValue } from "jotai";
-import { risutopottoAtom } from "@/features/shared/store";
+import { useState, useMemo, useEffect, useRef } from "react";
+import type { ListItem } from "@/features/list/types/ListItem";
 import {
 	sortItems,
 	type SortKey,
@@ -14,44 +13,55 @@ import {
 	type ServiceFilter,
 } from "@/features/list/helpers/filterListItems";
 import type { SupportedServiceSlug } from "@/app/consts";
-import SubListTabBar from "@/app/components/SubListTabBar";
-import SubListMoreMenu from "@/app/[publicListId]/components/SubListMoreMenu";
 import SortButton from "@/app/[publicListId]/components/SortButton";
 import WatchedFilterButton from "@/app/[publicListId]/components/WatchedFilterButton";
 import ServiceFilterButton from "@/app/[publicListId]/components/ServiceFilterButton";
+import SubListMoreMenu from "@/app/[publicListId]/components/SubListMoreMenu";
 import ListContainer from "../List/Container";
-import ListItemDetail from "../List/Item/Detail";
 import Item from "../List/Item";
 import { Input } from "@/components/ui/input";
 import SearchIcon from "@/components/ui/Icons/SearchIcon";
 import CrossIcon from "@/components/ui/Icons/CrossIcon";
+import FilterIcon from "@/components/ui/Icons/FilterIcon";
 import ActiveFilterChips from "@/app/[publicListId]/components/ActiveFilterChips";
 
-type Props = {
-	publicListId: string;
+type SubList = {
+	publicId: string;
+	name: string;
 };
+
+type Props = {
+	items: ListItem[];
+	publicListId: string;
+	mainListPublicId: string;
+	subLists: SubList[];
+	checkedSubListIdsMap: Map<string, string[]>;
+};
+
+type FilterState = {
+	query: string;
+	watchedFilter: WatchedFilter;
+	serviceFilter: ServiceFilter;
+};
+
+const DEBOUNCE_MS = 180;
 
 const INITIAL_SERVICE_FILTER: ServiceFilter = [];
 
-export default function LocalList({ publicListId }: Props) {
-	const store = useAtomValue(risutopottoAtom);
-
+export default function ListController({
+	items,
+	publicListId,
+	mainListPublicId,
+	subLists,
+	checkedSubListIdsMap,
+}: Props) {
 	const [sortKey, setSortKey] = useState<SortKey>("createdAt");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 	const [query, setQuery] = useState("");
 	const [watchedFilter, setWatchedFilter] = useState<WatchedFilter>("all");
-	const [serviceFilter, setServiceFilter] =
-		useState<ServiceFilter>(INITIAL_SERVICE_FILTER);
-
-	const listId = store.list.listId;
-	const allItems = store.list.items;
-	const rawSubLists = store.subLists;
-
-	type FilterState = {
-		query: string;
-		watchedFilter: WatchedFilter;
-		serviceFilter: ServiceFilter;
-	};
+	const [serviceFilter, setServiceFilter] = useState<ServiceFilter>(
+		INITIAL_SERVICE_FILTER,
+	);
 
 	const [appliedFilter, setAppliedFilter] = useState<FilterState>({
 		query: "",
@@ -67,7 +77,7 @@ export default function LocalList({ publicListId }: Props) {
 		}
 		timerRef.current = setTimeout(() => {
 			setAppliedFilter({ query, watchedFilter, serviceFilter });
-		}, 200);
+		}, DEBOUNCE_MS);
 		return () => {
 			if (timerRef.current !== null) {
 				clearTimeout(timerRef.current);
@@ -80,63 +90,31 @@ export default function LocalList({ publicListId }: Props) {
 		watchedFilter !== appliedFilter.watchedFilter ||
 		serviceFilter !== appliedFilter.serviceFilter;
 
-	const subsetItems = useMemo(() => {
-		if (publicListId === listId) {
-			return allItems;
-		}
-		const subList = rawSubLists.find((sl) => sl.subListId === publicListId);
-		if (!subList) {
-			return allItems;
-		}
-		return allItems.filter((item) =>
-			subList.listItemIds.includes(item.listItemId),
-		);
-	}, [publicListId, listId, allItems, rawSubLists]);
-
 	const availableSlugs = useMemo<SupportedServiceSlug[]>(
-		() => Array.from(new Set(subsetItems.map((item) => item.serviceSlug))),
-		[subsetItems],
+		() => Array.from(new Set(items.map((item) => item.serviceSlug))),
+		[items],
 	);
 
-	const items = useMemo(() => {
-		const filtered = filterListItems(subsetItems, {
+	const displayedItems = useMemo(() => {
+		const filtered = filterListItems(items, {
 			query: appliedFilter.query,
 			watchedFilter: appliedFilter.watchedFilter,
 			serviceFilter: appliedFilter.serviceFilter,
 		});
 		return sortItems(filtered, sortKey, sortOrder);
-	}, [subsetItems, appliedFilter, sortKey, sortOrder]);
-
-	const subLists = useMemo(
-		() =>
-			rawSubLists.map(({ subListId, name }) => ({
-				publicId: subListId,
-				name,
-			})),
-		[rawSubLists],
-	);
+	}, [items, appliedFilter, sortKey, sortOrder]);
 
 	const handleSort = (key: SortKey, order: SortOrder) => {
 		setSortKey(key);
 		setSortOrder(order);
 	};
 
-	if (!listId) {
-		return;
-	}
-
 	return (
 		<>
-			<SubListTabBar
-				mainListPublicId={listId}
-				currentPublicId={publicListId}
-				subLists={subLists}
-				isLoggedIn={false}
-			/>
-			<div className="px-2">
-				<search className="relative px-2 flex items-center rounded-full border border-input bg-background transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
+			<div className="max-w-6xl mx-auto px-4 sm:px-9 py-4">
+				<search className="w-full px-2 flex items-center rounded-full border border-foreground-dark-3 bg-background transition-[color,box-shadow] focus-within:border-foreground-dark-2 focus-within:ring-foreground-dark-2 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
 					<SearchIcon
-						className="size-6 text-muted-foreground pointer-events-none"
+						className="size-6 text-muted-foreground pointer-events-none text-foreground-dark-3"
 						aria-hidden="true"
 					/>
 					<Input
@@ -158,32 +136,45 @@ export default function LocalList({ publicListId }: Props) {
 						</button>
 					)}
 				</search>
-			</div>
-			<div className="w-full flex justify-between items-center gap-1 sm:justify-end px-4 sm:px-9 pt-4">
-				<ServiceFilterButton
-					value={serviceFilter}
-					onChange={setServiceFilter}
-					availableSlugs={availableSlugs}
-				/>
-				<WatchedFilterButton
-					value={watchedFilter}
-					onChange={setWatchedFilter}
-				/>
-				<SortButton
-					activeSortKey={sortKey}
-					activeSortOrder={sortOrder}
-					onSort={handleSort}
-				/>
-				{listId !== publicListId && (
-					<SubListMoreMenu
-						subListPublicId={publicListId}
-						subListName={rawSubLists.find((sl) => sl.subListId === publicListId)?.name ?? ""}
-						mainListPublicId={listId}
-						isLoggedIn={false}
-					/>
-				)}
-			</div>
-			<div className="px-4 sm:px-9 pt-2">
+
+				<div className="flex items-center gap-1 pt-4 pb-2">
+					<div className="flex items-center gap-1 rounded-full border border-background-light-1 p-1">
+						<div className="text-xs font-bold text-foreground-dark-1 px-1">
+							<FilterIcon className="size-4" />
+						</div>
+						<div className="flex gap-1 items-center">
+							<ServiceFilterButton
+								value={serviceFilter}
+								onChange={setServiceFilter}
+								availableSlugs={availableSlugs}
+							/>
+							<WatchedFilterButton
+								value={watchedFilter}
+								onChange={setWatchedFilter}
+							/>
+						</div>
+					</div>
+
+					<div className="flex gap-1">
+						<SortButton
+							activeSortKey={sortKey}
+							activeSortOrder={sortOrder}
+							onSort={handleSort}
+						/>
+						{mainListPublicId !== publicListId && (
+							<SubListMoreMenu
+								subListPublicId={publicListId}
+								subListName={
+									subLists.find((sl) => sl.publicId === publicListId)?.name ??
+									""
+								}
+								mainListPublicId={mainListPublicId}
+								isLoggedIn={true}
+							/>
+						)}
+					</div>
+				</div>
+
 				<ActiveFilterChips
 					serviceFilter={serviceFilter}
 					onServiceRemove={(slug) =>
@@ -194,23 +185,26 @@ export default function LocalList({ publicListId }: Props) {
 				/>
 			</div>
 			<div
-				className={`motion-safe:transition-opacity motion-safe:duration-200 ${isPending ? "opacity-50" : "opacity-100"}`}
+				className={`motion-safe:transition-opacity motion-safe:duration-200 ${isPending ? "opacity-40" : "opacity-100"}`}
 			>
 				<ListContainer>
-					{items.map((movie) => {
+					{displayedItems.map((movie) => {
+						const checkedSubListIds =
+							checkedSubListIdsMap.get(movie.listItemId) ?? [];
 						return (
 							<Item
 								key={movie.listItemId}
 								movie={movie}
-								isLoggedIn={false}
+								isLoggedIn={true}
 								publicListId={publicListId}
+								subLists={subLists}
+								checkedSubListIds={checkedSubListIds}
 								sortKey={sortKey}
 							/>
 						);
 					})}
 				</ListContainer>
 			</div>
-			<ListItemDetail publicListId={publicListId} isLoggedIn={false} />
 		</>
 	);
 }

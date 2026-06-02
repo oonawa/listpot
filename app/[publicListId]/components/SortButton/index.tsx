@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import SortIcon from "@/components/ui/Icons/SortIcon";
 import {
@@ -49,36 +48,17 @@ const SORT_GROUPS: SortGroup[] = [
 const DEFAULT_SORT_KEY: SortKey = "createdAt";
 const DEFAULT_SORT_ORDER: SortOrder = "desc";
 
-const VALID_SORT_KEYS = ["createdAt", "releaseDate", "runningMinutes"] as const;
-const VALID_SORT_ORDERS = ["asc", "desc"] as const;
+type Props = {
+	activeSortKey?: SortKey;
+	activeSortOrder?: SortOrder;
+	onSort: (sortKey: SortKey, sortOrder: SortOrder) => void;
+};
 
-function isSortKey(value: string): value is SortKey {
-	return (VALID_SORT_KEYS as readonly string[]).includes(value);
-}
-
-function isSortOrder(value: string): value is SortOrder {
-	return (VALID_SORT_ORDERS as readonly string[]).includes(value);
-}
-
-export default function SortButton() {
-	const router = useRouter();
-	const searchParams = useSearchParams();
-
-	const sortParam = searchParams.get("sort");
-	let activeSortKey: SortKey = DEFAULT_SORT_KEY;
-	let activeSortOrder: SortOrder = DEFAULT_SORT_ORDER;
-	if (sortParam) {
-		const lastUnderscore = sortParam.lastIndexOf("_");
-		if (lastUnderscore !== -1) {
-			const keyPart = sortParam.slice(0, lastUnderscore);
-			const orderPart = sortParam.slice(lastUnderscore + 1);
-			if (isSortKey(keyPart) && isSortOrder(orderPart)) {
-				activeSortKey = keyPart;
-				activeSortOrder = orderPart;
-			}
-		}
-	}
-
+export default function SortButton({
+	activeSortKey = DEFAULT_SORT_KEY,
+	activeSortOrder = DEFAULT_SORT_ORDER,
+	onSort,
+}: Props) {
 	const [hoveredGroupKey, setHoveredGroupKey] = useState<SortKey | null>(null);
 	const [hoveredSubKey, setHoveredSubKey] = useState<string | null>(null);
 	const [open, setOpen] = useState(false);
@@ -92,20 +72,28 @@ export default function SortButton() {
 	};
 
 	const handleSelect = (sortKey: SortKey, sortOrder: SortOrder) => {
-		const params = new URLSearchParams(searchParams.toString());
-		params.set("sort", `${sortKey}_${sortOrder}`);
-		router.push(`?${params.toString()}`);
+		onSort(sortKey, sortOrder);
 	};
+
+	const activeGroup = SORT_GROUPS.find((g) => g.sortKey === activeSortKey);
+	const activeSub = activeGroup?.subOptions.find(
+		(s) => s.sortOrder === activeSortOrder,
+	);
+	const triggerLabel =
+		activeGroup && activeSub
+			? `${activeGroup.label}：${activeSub.label}`
+			: "並べ替え";
 
 	return (
 		<DropdownMenu open={open} onOpenChange={handleOpenChange}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"
-					className="has-[>svg]:px-2 py-3 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1"
+					data-testid="sort-button-trigger"
+					className="has-[>svg]:px-3 py-4 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1 rounded-full h-8 border border-background-light-1"
 				>
-					<SortIcon className="size-5" />
-					並べ替え
+					<SortIcon className="size-4" />
+					{triggerLabel}
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="bg-background">

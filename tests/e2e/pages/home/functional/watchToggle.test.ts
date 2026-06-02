@@ -113,13 +113,12 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	// ── 未ログイン：未視聴 → 視聴済み ─────────────────────────────────────
@@ -134,10 +133,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("未認証ユーザーが Pixel 7 でボタンを押すと「観た！」に変わり安定して維持される", async ({
@@ -150,10 +148,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("未認証ユーザーが Desktop Chrome でボタンを押すと「観た！」に変わり安定して維持される", async ({
@@ -166,10 +163,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("未認証ユーザーが Desktop Firefox でボタンを押すと「観た！」に変わり安定して維持される", async ({
@@ -182,10 +178,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("未認証ユーザーが Desktop Safari でボタンを押すと「観た！」に変わり安定して維持される", async ({
@@ -198,10 +193,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	// ── 未ログイン：視聴済み → 未視聴 ─────────────────────────────────────
@@ -216,10 +210,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	test("未認証ユーザーが Pixel 7 で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
@@ -232,10 +225,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	test("未認証ユーザーが Desktop Chrome で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
@@ -248,10 +240,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	test("未認証ユーザーが Desktop Firefox で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
@@ -264,10 +255,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	test("未認証ユーザーが Desktop Safari で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
@@ -280,10 +270,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByText("もう観た？")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 		await page.waitForTimeout(500);
-		await expect(page.getByText("もう観た？")).toBeVisible();
-		await expect(page.getByText("観た！")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
 	});
 
 	// ── ログイン済み：楽観的更新が即座に反映され最終的にサーバー状態と一致 ──
@@ -302,10 +291,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(1000);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("認証済みユーザーが Pixel 7 でボタンを押すと楽観的更新が即座に反映され最終的にサーバー状態と一致する", async ({
@@ -322,10 +310,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(1000);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("認証済みユーザーが Desktop Chrome でボタンを押すと楽観的更新が即座に反映され最終的にサーバー状態と一致する", async ({
@@ -342,10 +329,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(1000);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("認証済みユーザーが Desktop Firefox でボタンを押すと楽観的更新が即座に反映され最終的にサーバー状態と一致する", async ({
@@ -362,10 +348,9 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(1000);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 
 	test("認証済みユーザーが Desktop Safari でボタンを押すと楽観的更新が即座に反映され最終的にサーバー状態と一致する", async ({
@@ -382,9 +367,8 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
-		await expect(page.getByText("観た！")).toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 		await page.waitForTimeout(1000);
-		await expect(page.getByText("観た！")).toBeVisible();
-		await expect(page.getByText("もう観た？")).not.toBeVisible();
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 	});
 });
