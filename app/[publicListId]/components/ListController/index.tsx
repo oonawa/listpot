@@ -188,7 +188,7 @@ export default function ListController({
 				className={`motion-safe:transition-opacity motion-safe:duration-200 ${isPending ? "opacity-40" : "opacity-100"}`}
 			>
 				<ListContainer>
-					{displayedItems.map((movie) => {
+					{displayedItems.map((movie, index) => {
 						const checkedSubListIds =
 							checkedSubListIdsMap.get(movie.listItemId) ?? [];
 						return (
@@ -200,6 +200,7 @@ export default function ListController({
 								subLists={subLists}
 								checkedSubListIds={checkedSubListIds}
 								sortKey={sortKey}
+								index={index}
 							/>
 						);
 					})}

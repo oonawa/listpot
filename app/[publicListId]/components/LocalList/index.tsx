@@ -197,7 +197,7 @@ export default function LocalList({ publicListId }: Props) {
 				className={`motion-safe:transition-opacity motion-safe:duration-200 ${isPending ? "opacity-50" : "opacity-100"}`}
 			>
 				<ListContainer>
-					{items.map((movie) => {
+					{items.map((movie, index) => {
 						return (
 							<Item
 								key={movie.listItemId}
@@ -205,6 +205,7 @@ export default function LocalList({ publicListId }: Props) {
 								isLoggedIn={false}
 								publicListId={publicListId}
 								sortKey={sortKey}
+								index={index}
 							/>
 						);
 					})}

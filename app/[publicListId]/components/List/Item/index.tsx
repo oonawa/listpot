@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai";
 import { formatRelativeDate, formatFullDate } from "@/lib/date";
 import type { ListItem } from "@/features/list/types/ListItem";
 import type { SortKey } from "@/features/list/helpers/sortListItems";
+import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 import CheckMarkIcon from "@/components/ui/Icons/CheckMarkIcon";
 import SubListSelectDrawer from "@/app/components/SubListSelectDrawer/SubListSelectDrawer";
 import LocalSubListSelectDrawer from "@/app/components/SubListSelectDrawer/LocalSubListSelectDrawer";
@@ -25,6 +26,7 @@ type LoggedInProps = {
 	subLists: SubList[];
 	checkedSubListIds: string[];
 	sortKey?: SortKey;
+	index: number;
 };
 
 type GuestProps = {
@@ -32,6 +34,7 @@ type GuestProps = {
 	isLoggedIn: false;
 	publicListId: string;
 	sortKey?: SortKey;
+	index: number;
 };
 
 type Props = LoggedInProps | GuestProps;
@@ -58,7 +61,7 @@ const formatDateLabel = (
 };
 
 export default function Item(props: Props) {
-	const { movie, isLoggedIn, publicListId, sortKey } = props;
+	const { movie, isLoggedIn, publicListId, sortKey, index } = props;
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
 	const store = useAtomValue(risutopottoAtom);
@@ -112,11 +115,15 @@ export default function Item(props: Props) {
 								className="w-full h-full flex justify-center"
 							>
 								<div className="h-full aspect-square flex justify-center">
-									<img
-										className="object-contain h-full rounded-sm"
-										src={movie.details?.posterImage}
-										alt=""
-									/>
+									{movie.details.posterImage && (
+										<img
+											className="object-contain h-full rounded-sm"
+											src={withTmdbImageSize(movie.details.posterImage, "w342")}
+											alt=""
+											decoding="async"
+											{...(index >= 3 ? { loading: "lazy" } : { fetchPriority: "high" })}
+										/>
+									)}
 								</div>
 							</SearchButton>
 						) : (
@@ -127,11 +134,15 @@ export default function Item(props: Props) {
 						)}
 					</div>
 
-					<img
-						className="w-full h-full object-cover"
-						src={movie.details?.backgroundImage}
-						alt=""
-					/>
+					{movie.details?.backgroundImage && (
+						<img
+							className="w-full h-full object-cover"
+							src={withTmdbImageSize(movie.details.backgroundImage, "w300")}
+							alt=""
+							decoding="async"
+							{...(index >= 3 ? { loading: "lazy" } : {})}
+						/>
+					)}
 				</div>
 				<div className="flex gap-2 w-full rounded-b-2x pt-4 sm:pt-2">
 					<div>

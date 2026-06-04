@@ -1,4 +1,5 @@
 import { formatFullDate } from "@/lib/date";
+import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 
 type Props = {
 	title: string;
@@ -34,8 +35,10 @@ export default function MovieDetail({
 						<div className="w-full aspect-square flex justify-center">
 							<img
 								className="object-contain h-full rounded-sm"
-								src={posterImage}
+								src={withTmdbImageSize(posterImage, "w342")}
 								alt=""
+								decoding="async"
+								fetchPriority="high"
 							/>
 						</div>
 					</div>
@@ -70,8 +73,9 @@ export default function MovieDetail({
 			</div>
 			<img
 				className="w-full h-full object-contain rounded-2xl"
-				src={backgroundImage}
+				src={withTmdbImageSize(backgroundImage, "w780")}
 				alt=""
+				decoding="async"
 			/>
 		</div>
 	);

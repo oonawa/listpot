@@ -1,6 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import type { TmdbSearchResponse } from "@/features/movieDatabase/types/TmdbResponse";
 import { TMDB_IMAGE_BASE_URL } from "@/app/consts";
+import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 import { Button } from "@/components/ui/button";
 import ArrowCircleLeftIcon from "@/components/ui/Icons/ArrowCircleLeftIcon";
 import FadeIn from "../ListItem/Content/FadeIn";
@@ -47,7 +48,7 @@ export default function SearchResult({
 				{searchResult ? (
 					<FadeIn key="content">
 						<ul className="flex flex-col gap-4 relative">
-							{searchResult.results.map((result) => (
+							{searchResult.results.map((result, resultIndex) => (
 								<li
 									key={String(result.id)}
 									className="w-full aspect-video bg-background-dark-1 rounded-md"
@@ -56,8 +57,10 @@ export default function SearchResult({
 										<div className="col-start-1 col-end-3 w-full flex items-center">
 											<img
 												className="rounded-md"
-												src={TMDB_IMAGE_BASE_URL + result.poster_path}
+												src={withTmdbImageSize(TMDB_IMAGE_BASE_URL + result.poster_path, "w185")}
 												alt=""
+												decoding="async"
+												{...(resultIndex >= 1 ? { loading: "lazy" } : {})}
 											/>
 										</div>
 										<div className="col-start-3 col-end-8 pl-4 sm:pl-8 sm:py-8 flex flex-col justify-between">
@@ -93,8 +96,10 @@ export default function SearchResult({
 									<div className="w-full aspect-video">
 										<img
 											className="object-contain w-full rounded-md"
-											src={TMDB_IMAGE_BASE_URL + result.backdrop_path}
+											src={withTmdbImageSize(TMDB_IMAGE_BASE_URL + result.backdrop_path, "w300")}
 											alt=""
+											decoding="async"
+											{...(resultIndex >= 1 ? { loading: "lazy" } : {})}
 										/>
 									</div>
 								</li>
