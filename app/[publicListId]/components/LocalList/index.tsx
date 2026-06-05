@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import { risutopottoAtom } from "@/features/shared/store";
+import { useIsHydrated } from "@/features/shared/hooks/useIsHydrated";
 import {
 	sortItems,
 	type SortKey,
@@ -35,6 +36,8 @@ const INITIAL_SERVICE_FILTER: ServiceFilter = [];
 
 export default function LocalList({ publicListId }: Props) {
 	const store = useAtomValue(risutopottoAtom);
+
+	const isHydrated = useIsHydrated();
 
 	const [sortKey, setSortKey] = useState<SortKey>("createdAt");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -121,8 +124,8 @@ export default function LocalList({ publicListId }: Props) {
 		setSortOrder(order);
 	};
 
-	if (!listId) {
-		return;
+	if (!isHydrated || !listId) {
+		return null;
 	}
 
 	return (
