@@ -3,6 +3,7 @@
 import { useAtomValue } from "jotai";
 import { usePathname } from "next/navigation";
 import { risutopottoAtom } from "@/features/shared/store";
+import { useIsHydrated } from "@/features/shared/hooks/useIsHydrated";
 import HomeIcon from "../../ui/Icons/HomeIcon";
 import ListIcon from "../../ui/Icons/ListIcon";
 import MenuItem from "../MenuItem";
@@ -15,8 +16,9 @@ type Props = {
 export default function MenuContent({ publicListId }: Props) {
 	const store = useAtomValue(risutopottoAtom);
 	const pathname = usePathname();
+	const isHydrated = useIsHydrated();
 
-	const listId = publicListId ?? store.list.listId;
+	const listId = publicListId ?? (isHydrated ? store.list.listId : "");
 
 	return (
 		<nav className="h-(--navigation-height) fixed bottom-(--navigation-bottom) w-full flex justify-center gap-2">
