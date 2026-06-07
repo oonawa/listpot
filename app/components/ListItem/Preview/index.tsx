@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence } from "motion/react";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
 import Content from "../Content";
@@ -22,7 +24,6 @@ type Props = {
 	handleToggleWatch?: () => void;
 	isTogglePending?: boolean;
 	storeSuccess?: boolean;
-	isLoggedIn: boolean;
 	errorMessage?: string;
 };
 
@@ -36,7 +37,6 @@ export default function PreviewListItem({
 	handleToggleWatch,
 	isTogglePending,
 	storeSuccess,
-	isLoggedIn,
 	errorMessage,
 }: Props) {
 	return (
@@ -52,7 +52,7 @@ export default function PreviewListItem({
 
 						{storeSuccess === true && (
 							<FadeIn>
-								<StoreSuccess isLoggedIn={isLoggedIn} />
+								<StoreSuccess />
 							</FadeIn>
 						)}
 						{storeSuccess === false && (

@@ -214,7 +214,7 @@ export default function LocalList({ publicListId }: Props) {
 					})}
 				</ListContainer>
 			</div>
-			<ListItemDetail publicListId={publicListId} isLoggedIn={false} />
+			<ListItemDetail publicListId={publicListId} subLists={[]} checkedSubListIdsMap={new Map()} />
 		</>
 	);
 }

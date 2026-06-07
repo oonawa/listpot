@@ -40,7 +40,7 @@ const meta = {
 		handleSearch: () => {},
 		handleRemove: () => {},
 		publicListId: "story-public-list-id",
-		isLoggedIn: false as const,
+		
 	},
 	decorators: [
 		(Story) => (

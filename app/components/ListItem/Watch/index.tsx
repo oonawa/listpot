@@ -1,4 +1,7 @@
+"use client";
+
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
+import { useAuth } from "@/features/auth/state/authAtom";
 import Content from "../Content";
 import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
@@ -22,7 +25,6 @@ type Props = {
 	handleRemove: () => void;
 	handleToggleWatch?: () => void;
 	publicListId: string;
-	isLoggedIn: boolean;
 	subLists?: SubList[];
 	checkedSubListIds?: string[];
 };
@@ -37,10 +39,10 @@ export default function WatchListItem({
 	handleRemove,
 	handleToggleWatch,
 	publicListId,
-	isLoggedIn,
 	subLists,
 	checkedSubListIds,
 }: Props) {
+	const auth = useAuth();
 	return (
 		<Content
 			movie={movie}
@@ -52,7 +54,7 @@ export default function WatchListItem({
 			<Menu
 				Button={<WatchButton url={movie.url} />}
 				SubMenu={
-					isLoggedIn ? (
+					auth.isLoggedIn ? (
 						<SubMenu
 							onSearch={handleSearch}
 							onRemove={handleRemove}

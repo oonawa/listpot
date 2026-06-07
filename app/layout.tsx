@@ -1,9 +1,9 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Menu from "@/components/Menu";
 import LocalListInitializer from "@/app/components/LocalListInitializer";
+import AuthInitializer from "@/app/components/AuthInitializer";
 import { currentUserPublicListId } from "@/features/shared/actions/currentUserPublicListId";
 import "./globals.css";
 
@@ -39,6 +39,7 @@ export default async function RootLayout({
 	const publicListId = publicListIdResult.success
 		? publicListIdResult.data.publicListId
 		: null;
+	const isLoggedIn = publicListIdResult.success && publicListId !== null;
 
 	return (
 		<html lang="ja">
@@ -47,6 +48,7 @@ export default async function RootLayout({
 			</head>
 			<body className={`antialiased`}>
 				{!publicListId && <LocalListInitializer />}
+				<AuthInitializer isLoggedIn={isLoggedIn} publicListId={publicListId} />
 
 				<Header />
 

@@ -38,7 +38,6 @@ const meta = {
 		isSearchPending: false,
 		isSubmitPending: false,
 		isRemovePending: false,
-		isLoggedIn: true,
 		handleSearch: () => {},
 		handleSubmit: () => {},
 		handleRemove: () => {},
@@ -75,14 +74,12 @@ export const RemovePending: Story = {
 export const StoreSuccess: Story = {
 	args: {
 		storeSuccess: true,
-		isLoggedIn: true,
 	},
 };
 
 export const StoreSuccessAsGuest: Story = {
 	args: {
 		storeSuccess: true,
-		isLoggedIn: false,
 	},
 };
 

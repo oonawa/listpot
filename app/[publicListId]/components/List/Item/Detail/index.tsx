@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useMovieAtom } from "@/features/list/state/useMovieAtom";
 import { Button } from "@/components/ui/button";
 import CrossIcon from "@/components/ui/Icons/CrossIcon";
-import ListItemCard from "@/app/components/ListItem";
+import RegisteredListItem from "@/app/components/ListItem/Registered";
 import BottomSheetContent from "@/app/components/BottomSheetContent";
 
 type SubList = {
@@ -14,25 +14,14 @@ type SubList = {
 	name: string;
 };
 
-type LoggedInProps = {
-	isLoggedIn: true;
+type Props = {
+	publicListId: string;
 	subLists: SubList[];
 	checkedSubListIdsMap: Map<string, string[]>;
 };
 
-type GuestProps = {
-	isLoggedIn?: false;
-	subLists?: undefined;
-	checkedSubListIdsMap?: undefined;
-};
-
-type Props = {
-	publicListId: string;
-} & (LoggedInProps | GuestProps);
-
 export default function ListItemDetail({
 	publicListId,
-	isLoggedIn = false,
 	subLists,
 	checkedSubListIdsMap,
 }: Props) {
@@ -77,31 +66,17 @@ export default function ListItemDetail({
 								</Button>
 							</div>
 							<BottomSheetContent withPadding>
-								{isLoggedIn ? (
-									<ListItemCard
-										movie={movie}
-										isLoggedIn={true}
-										publicListId={publicListId}
-										subLists={subLists}
-										checkedSubListIds={
-											"listItemId" in movie
-												? (checkedSubListIdsMap?.get(movie.listItemId) ?? [])
-												: []
-										}
-										refresh={() => {
-											router.refresh();
-										}}
-									/>
-								) : (
-									<ListItemCard
-										movie={movie}
-										isLoggedIn={false}
-										publicListId={publicListId}
-										refresh={() => {
-											router.refresh();
-										}}
-									/>
-								)}
+								<RegisteredListItem
+									movie={movie}
+									publicListId={publicListId}
+									subLists={subLists}
+									checkedSubListIds={
+										checkedSubListIdsMap?.get(movie.listItemId) ?? []
+									}
+									refresh={() => {
+										router.refresh();
+									}}
+								/>
 							</BottomSheetContent>
 						</div>
 					</motion.div>

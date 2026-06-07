@@ -1,12 +1,15 @@
+"use client";
+
 import { useState } from "react";
 import type { ListItem } from "@/features/list/types/ListItem";
-import { currentUserPublicListId } from "@/features/shared/actions/currentUserPublicListId";
 import { storeListItem } from "@/features/list/actions/storeListItem";
 import { removeListItem } from "@/features/list/actions/removeListItem";
 import { useServerAction } from "@/features/shared/hooks/useServerAction";
+import { useAuth } from "@/features/auth/state/authAtom";
 import { useListLocalStorageRepository } from "./useListLocalStorageRepository";
 
 export const useSubmitMovie = ({ onSuccess }: { onSuccess?: () => void }) => {
+	const auth = useAuth();
 	const [success, setSuccess] = useState<boolean | undefined>(undefined);
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(
 		undefined,
@@ -33,10 +36,7 @@ export const useSubmitMovie = ({ onSuccess }: { onSuccess?: () => void }) => {
 		movie: ListItem;
 	}) => {
 		executeSubmit(async () => {
-			const publicListIdResult = await currentUserPublicListId();
-			const publicListId = publicListIdResult.success
-				? publicListIdResult.data.publicListId
-				: null;
+			const publicListId = auth.publicListId;
 
 			if (!publicListId) {
 				storeLocalListItem(movie);
@@ -65,10 +65,7 @@ export const useSubmitMovie = ({ onSuccess }: { onSuccess?: () => void }) => {
 		listItemId: string;
 	}) => {
 		executeRemove(async () => {
-			const publicListIdResult = await currentUserPublicListId();
-			const publicListId = publicListIdResult.success
-				? publicListIdResult.data.publicListId
-				: null;
+			const publicListId = auth.publicListId;
 
 			if (!publicListId) {
 				removeLocalListItem(listItemId);

@@ -28,11 +28,10 @@ const PossibleDuplicateItems = dynamic(
 
 type Props = {
 	items?: ListItem[];
-	isLoggedIn?: boolean;
 	defaultTab?: "mobile";
 };
 
-export default function MovieInputForm({ items, isLoggedIn = false, defaultTab }: Props) {
+export default function MovieInputForm({ items, defaultTab }: Props) {
 	const { activeTab, setActiveTab, deviceTab } = useActiveTab(defaultTab);
 	const shouldAnimate = useRef(defaultTab === undefined && deviceTab === undefined);
 
@@ -191,7 +190,6 @@ export default function MovieInputForm({ items, isLoggedIn = false, defaultTab }
 
 									{!possibleDuplicateMovies && (
 										<DraftNewItem
-											isLoggedIn={isLoggedIn}
 											draft={extractedMovie}
 										/>
 									)}
