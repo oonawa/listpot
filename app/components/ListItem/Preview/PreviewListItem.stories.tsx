@@ -37,8 +37,7 @@ const meta = {
 		movie: movieWithDetails,
 		isSearchPending: false,
 		isSubmitPending: false,
-		isLoggedIn: true,
-		handleSearch: () => {},
+				handleSearch: () => {},
 		handleSubmit: () => {},
 		handleCancel: () => {},
 	},
@@ -73,15 +72,13 @@ export const SubmitPending: Story = {
 export const StoreSuccess: Story = {
 	args: {
 		storeSuccess: true,
-		isLoggedIn: true,
-	},
+			},
 };
 
 export const StoreSuccessAsGuest: Story = {
 	args: {
 		storeSuccess: true,
-		isLoggedIn: false,
-	},
+			},
 };
 
 export const StoreFailed: Story = {

@@ -1,3 +1,5 @@
+"use client";
+
 import type { DraftListItem } from "@/features/list/types/ListItem";
 import Content from "../Content";
 import ServiceName from "../Content/ServiceName";
@@ -17,7 +19,6 @@ type Props = {
 	onWatchToggle?: () => void;
 	isWatchTogglePending?: boolean;
 	storeSuccess?: boolean;
-	isLoggedIn: boolean;
 	errorMessage?: string;
 };
 
@@ -30,7 +31,6 @@ export default function NewListItem({
 	onWatchToggle,
 	isWatchTogglePending,
 	storeSuccess,
-	isLoggedIn,
 	errorMessage,
 }: Props) {
 	return (
@@ -43,7 +43,7 @@ export default function NewListItem({
 
 			{storeSuccess === true && (
 				<FadeIn>
-					<StoreSuccess isLoggedIn={isLoggedIn} />
+					<StoreSuccess />
 				</FadeIn>
 			)}
 			{storeSuccess === false && (

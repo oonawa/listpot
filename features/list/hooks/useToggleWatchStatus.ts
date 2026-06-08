@@ -2,9 +2,9 @@
 
 import { useOptimistic, useState } from "react";
 import type { ListItem } from "@/features/list/types/ListItem";
-import { currentUserPublicListId } from "@/features/shared/actions/currentUserPublicListId";
 import { toggleWatchStatus } from "@/features/list/actions/toggleWatchStatus";
 import { useServerAction } from "@/features/shared/hooks/useServerAction";
+import { useAuth } from "@/features/auth/state/authAtom";
 import { useListLocalStorageRepository } from "./useListLocalStorageRepository";
 
 export const useToggleWatchStatus = ({
@@ -14,6 +14,7 @@ export const useToggleWatchStatus = ({
 	onSuccess?: () => void;
 	initialIsWatched: boolean;
 } = { initialIsWatched: false }) => {
+	const auth = useAuth();
 	const [errorMessage, setErrorMessage] = useState<string | undefined>();
 	// refresh() 完了前に useOptimistic がリセットされるバグを防ぐため、
 	// toggle 成功後の確定値をローカル state で保持する。
@@ -44,11 +45,7 @@ export const useToggleWatchStatus = ({
 			setOptimisticIsWatched(!currentIsWatched);
 			setErrorMessage(undefined);
 
-			const publicListIdResult = await currentUserPublicListId();
-			const publicListId = publicListIdResult.success
-				? publicListIdResult.data.publicListId
-				: null;
-
+			const publicListId = auth.publicListId;
 			const nextIsWatched = !currentIsWatched;
 
 			// 未ログイン：ローカルストレージ更新

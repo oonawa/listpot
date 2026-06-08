@@ -48,7 +48,6 @@ const meta = {
 		movie: movieWithoutDetails,
 		isSearchPending: false,
 		isSubmitPending: false,
-		isLoggedIn: true,
 		handleSearch: () => {},
 		handleSubmit: () => {},
 	},
@@ -92,7 +91,6 @@ export const StoreSuccessAsGuest: Story = {
 	args: {
 		movie: movieWithoutDetails,
 		storeSuccess: true,
-		isLoggedIn: false,
 	},
 };
 
@@ -100,7 +98,6 @@ export const StoreSuccess: Story = {
 	args: {
 		movie: movieWithoutDetails,
 		storeSuccess: true,
-		isLoggedIn: true,
 	},
 };
 
@@ -123,7 +120,6 @@ export const StoreSuccessWithDetailsAsGuest: Story = {
 	args: {
 		movie: movieWithDetails,
 		storeSuccess: true,
-		isLoggedIn: false,
 	},
 };
 
@@ -131,7 +127,6 @@ export const StoreSuccessWithDetails: Story = {
 	args: {
 		movie: movieWithDetails,
 		storeSuccess: true,
-		isLoggedIn: true,
 	},
 };
 

@@ -43,11 +43,10 @@ export default async function List({ items, publicListId, userId }: Props) {
 				checkedSubListIdsMap={checkedSubListIdsMap}
 			/>
 			<ListItemDetail
-				publicListId={publicListId}
-				isLoggedIn={true}
-				subLists={subLists}
-				checkedSubListIdsMap={checkedSubListIdsMap}
-			/>
+			publicListId={publicListId}
+			subLists={subLists}
+			checkedSubListIdsMap={checkedSubListIdsMap}
+		/>
 		</>
 	);
 }

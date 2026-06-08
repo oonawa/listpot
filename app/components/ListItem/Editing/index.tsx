@@ -1,5 +1,8 @@
+"use client";
+
 import { AnimatePresence } from "motion/react";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
+import { useAuth } from "@/features/auth/state/authAtom";
 import Content from "../Content";
 import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
@@ -25,7 +28,6 @@ type Props = {
 	handleToggleWatch?: () => void;
 	isTogglePending?: boolean;
 	storeSuccess?: boolean;
-	isLoggedIn: boolean;
 	publicListId?: string;
 	errorMessage?: string;
 };
@@ -42,10 +44,10 @@ export default function EditingListItem({
 	handleToggleWatch,
 	isTogglePending,
 	storeSuccess,
-	isLoggedIn,
 	publicListId = "",
 	errorMessage,
 }: Props) {
+	const auth = useAuth();
 	return (
 		<AnimatePresence mode="wait">
 			{movie ? (
@@ -59,7 +61,7 @@ export default function EditingListItem({
 
 						{storeSuccess === true && (
 							<FadeIn>
-								<StoreSuccess isLoggedIn={isLoggedIn} />
+								<StoreSuccess />
 							</FadeIn>
 						)}
 						{storeSuccess === false && (
@@ -84,7 +86,7 @@ export default function EditingListItem({
 										/>
 									}
 									SubMenu={
-										isLoggedIn ? (
+										auth.isLoggedIn ? (
 											<SubMenu
 												onSearch={handleSearch}
 												onRemove={handleRemove}
