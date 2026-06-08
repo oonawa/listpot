@@ -1,5 +1,5 @@
 import type { ListItem } from "@/features/list/types/ListItem";
-import ExistingListItemDetail from "../Detail";
+import SameListItem from "@/app/components/ListItem/Same";
 
 type Props = {
 	items: ListItem[];
@@ -15,7 +15,7 @@ export default function ExistingItemList({ items }: Props) {
 				<ul className="w-full pb-64">
 					{items.map((item) => (
 						<li key={item.listItemId} className="pb-4">
-							<ExistingListItemDetail movie={item} />
+							<SameListItem movie={item} />
 						</li>
 					))}
 				</ul>

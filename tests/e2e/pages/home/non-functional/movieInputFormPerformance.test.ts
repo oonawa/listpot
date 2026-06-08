@@ -5,7 +5,11 @@ import type {
 } from "@playwright/test";
 import { devices, expect, test } from "@playwright/test";
 import { setupAuthenticatedUser } from "../../../helpers/auth";
+import { seedListItems } from "../../../helpers/listItemsSeed";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
+
+// 認証済みケースで現実的なリスト規模を再現するためのシード件数
+const AUTHED_SEED_ITEMS = 100;
 
 // 3G スロットリング設定（ダウンロード: 750 KB/s、アップロード: 250 KB/s、レイテンシ: 100ms）
 const THROTTLING_3G = {
@@ -114,7 +118,12 @@ test.describe("MovieInputForm - 非機能テスト（認証済み × iPhone × C
 		await seedDatabase();
 		context = await browser.newContext({ ...IPHONE14_OPTIONS, baseURL });
 		page = await context.newPage();
-		await setupAuthenticatedUser(context, IPHONE14_UA, baseURL);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			IPHONE14_UA,
+			baseURL,
+		);
+		await seedListItems(userId, AUTHED_SEED_ITEMS);
 	});
 
 	test.afterEach(async ({ browserName }) => {
@@ -214,7 +223,12 @@ test.describe("MovieInputForm - 非機能テスト（認証済み × PC × Chrom
 		await seedDatabase();
 		context = await browser.newContext({ ...DESKTOP_CHROME_OPTIONS, baseURL });
 		page = await context.newPage();
-		await setupAuthenticatedUser(context, DESKTOP_CHROME_UA, baseURL);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			DESKTOP_CHROME_UA,
+			baseURL,
+		);
+		await seedListItems(userId, AUTHED_SEED_ITEMS);
 	});
 
 	test.afterEach(async ({ browserName }) => {
