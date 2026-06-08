@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import type { ListItem } from "@/features/list/types/ListItem";
+import SameListItem from "@/app/components/ListItem/Same";
 import ExistingItemList from "../ExistingItem/List";
-import ExistingListItemDetail from "../ExistingItem/Detail";
 import SelectButtons from "../SelectButtons";
 
 type Props = {
@@ -28,9 +28,13 @@ export default function PossibleDuplicateItems({
 			>
 				<div className="pt-6 px-4">
 					{sameMovie ? (
-						<div className="py-2 text-center text-xl font-bold">
-							すでにリスト登録されています。
-							<ExistingListItemDetail movie={sameMovie} />
+						<div className="py-2 flex flex-col items-center gap-4">
+							<h2 className="text-xl font-bold text-center">
+								すでにリスト登録されています。
+							</h2>
+							<div className="w-full max-w-120">
+								<SameListItem movie={sameMovie} />
+							</div>
 						</div>
 					) : (
 						<ExistingItemList items={possibleDuplicateMovies} />

@@ -1,12 +1,40 @@
+import crypto from "node:crypto";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { eq } from "drizzle-orm";
+import {
+	listItemsTable,
+	listsTable,
+	streamingServicesTable,
+} from "@/db/schema";
 import { setupAuthenticatedUser } from "../../../helpers/auth";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
+import { db } from "../../../lib/testDb";
 
 const MOVIE_TITLE = "グランド・イリュージョン 見破られたトリック";
 const UNEXT_URL =
 	"https://video-share.unext.jp/video/title/SID0027170?utm_source=copy&utm_medium=social&utm_campaign=nonad-sns&rid=PM061312883";
 const UNEXT_SHARE_LINK = `「${MOVIE_TITLE}」をU-NEXTで視聴 ${UNEXT_URL}`;
+
+// 認証済みユーザーの list に、指定 URL の listItem を 1 件挿入する
+async function seedUnextListItem(userId: number) {
+	const [list] = await db
+		.select()
+		.from(listsTable)
+		.where(eq(listsTable.userId, userId));
+	const [service] = await db
+		.select()
+		.from(streamingServicesTable)
+		.where(eq(streamingServicesTable.slug, "unext"));
+	await db.insert(listItemsTable).values({
+		publicId: crypto.randomUUID(),
+		listId: list.id,
+		streamingServiceId: service.id,
+		watchUrl: UNEXT_URL,
+		titleOnService: MOVIE_TITLE,
+		createdAt: new Date(),
+	});
+}
 
 // モバイルフォーム：共有リンクを入力して DraftNewItem パネルを検証
 async function fillMobileFormAndVerify(page: Page) {
@@ -203,6 +231,64 @@ test.describe("MovieInputForm - 機能テスト", () => {
 
 		// PC フォームの #title が最終的に表示されること（アニメーション完了後）
 		await expect(page.locator("#title")).toBeVisible({ timeout: 3000 });
+	});
+
+	// ── ログイン済みユーザーの重複検知 (Issue #287) ────────────────────────
+
+	test("認証済みユーザーが iPhone でリスト内と同じ URL を入力すると重複メッセージが表示される", async ({
+		page,
+		context,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"このテストは mobile-webkit プロジェクトのみ対象",
+		);
+		const userAgent = await page.evaluate(() => navigator.userAgent);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			testInfo.project.use.baseURL ?? "",
+		);
+		await seedUnextListItem(userId);
+
+		await page.goto("/");
+		const textarea = page.locator("textarea");
+		await expect(textarea).toBeVisible();
+		await textarea.fill(UNEXT_SHARE_LINK);
+
+		await expect(page.getByText("すでにリスト登録されています。")).toBeVisible({
+			timeout: 5000,
+		});
+		await expect(
+			page.getByRole("button", { name: "これで登録する" }),
+		).toHaveCount(0);
+	});
+
+	test("認証済みユーザーが Desktop Chrome でリスト内と同じ URL を入力すると重複メッセージが表示される", async ({
+		page,
+		context,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name !== "desktop-chromium",
+			"このテストは desktop-chromium プロジェクトのみ対象",
+		);
+		const userAgent = await page.evaluate(() => navigator.userAgent);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			testInfo.project.use.baseURL ?? "",
+		);
+		await seedUnextListItem(userId);
+
+		await page.goto("/");
+		await expect(page.locator("#title")).toBeVisible();
+		await page.locator("#title").fill(MOVIE_TITLE);
+		await page.locator("#watch-url").fill(UNEXT_URL);
+		await page.getByRole("button", { name: "登録" }).click();
+
+		await expect(page.getByText("すでにリスト登録されています。")).toBeVisible({
+			timeout: 5000,
+		});
 	});
 
 	test("Desktop Chrome で別ページへ遷移してホームに戻った際、フォームが即座に表示される", async ({

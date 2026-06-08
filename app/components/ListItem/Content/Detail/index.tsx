@@ -29,7 +29,7 @@ export default function MovieDetail({
 
 	return (
 		<div className="relative h-full">
-			<div className="absolute w-full h-full top-0 bg-background-dark-1/85">
+			<div className="absolute w-full h-full top-0 bg-background-dark-1/85 rounded-2xl">
 				<div className="w-full aspect-video grid grid-cols-2">
 					<div className="col-start-1 col-end-2 flex items-center">
 						<div className="w-full aspect-square flex justify-center">
