@@ -4,7 +4,7 @@ description: >
   実装計画を策定してTODO.mdに書き出し、ユーザーの承認を得るまで待機するスキル。
   docs/workflow.md のフェーズ1に相当。承認なしに実装を開始しない。
 user-invocable: true
-model: sonnet
+model: opus
 ---
 
 # 計画スキル（フェーズ1）
