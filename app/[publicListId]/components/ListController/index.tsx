@@ -36,6 +36,7 @@ type Props = {
 	mainListPublicId: string;
 	subLists: SubList[];
 	checkedSubListIdsMap: Map<string, string[]>;
+	isLoggedIn: boolean;
 };
 
 type FilterState = {
@@ -54,6 +55,7 @@ export default function ListController({
 	mainListPublicId,
 	subLists,
 	checkedSubListIdsMap,
+	isLoggedIn,
 }: Props) {
 	const [sortKey, setSortKey] = useState<SortKey>("createdAt");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -169,7 +171,7 @@ export default function ListController({
 									""
 								}
 								mainListPublicId={mainListPublicId}
-								isLoggedIn={true}
+								isLoggedIn={isLoggedIn}
 							/>
 						)}
 					</div>
@@ -189,16 +191,28 @@ export default function ListController({
 			>
 				<ListContainer>
 					{displayedItems.map((movie, index) => {
-						const checkedSubListIds =
-							checkedSubListIdsMap.get(movie.listItemId) ?? [];
+						if (isLoggedIn) {
+							const checkedSubListIds =
+								checkedSubListIdsMap.get(movie.listItemId) ?? [];
+							return (
+								<Item
+									key={movie.listItemId}
+									movie={movie}
+									isLoggedIn={true}
+									publicListId={publicListId}
+									subLists={subLists}
+									checkedSubListIds={checkedSubListIds}
+									sortKey={sortKey}
+									index={index}
+								/>
+							);
+						}
 						return (
 							<Item
 								key={movie.listItemId}
 								movie={movie}
-								isLoggedIn={true}
+								isLoggedIn={false}
 								publicListId={publicListId}
-								subLists={subLists}
-								checkedSubListIds={checkedSubListIds}
 								sortKey={sortKey}
 								index={index}
 							/>

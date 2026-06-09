@@ -41,6 +41,7 @@ export default async function List({ items, publicListId, userId }: Props) {
 				mainListPublicId={mainListPublicId}
 				subLists={subLists}
 				checkedSubListIdsMap={checkedSubListIdsMap}
+				isLoggedIn={true}
 			/>
 			<ListItemDetail
 			publicListId={publicListId}
