@@ -11,7 +11,7 @@ export default function SubmitButton({ isDisabled, onSubmit }: Props) {
 			disabled={isDisabled}
 			onClick={onSubmit}
 			variant={"outline"}
-			className="cursor-pointer flex-1 py-5 border-background-light-2 hover:border-background-light-3 hover:bg-background-light-1"
+			className="h-12 cursor-pointer flex-1 border-2 border-background-light-2 hover:border-background-light-3 hover:bg-background-light-1"
 		>
 			これで登録する
 		</Button>

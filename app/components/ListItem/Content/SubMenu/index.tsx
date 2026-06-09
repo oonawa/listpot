@@ -109,7 +109,7 @@ export default function SubMenu({
 				<DropdownMenuTrigger asChild>
 					<Button
 						variant="outline"
-						className="h-10.5 aspect-square has-[>svg]:p-0 box-content border-2 border-background-light-1 bg-transparent cursor-pointer text-foreground-dark-1 hover:text-foreground hover:bg-background-light-2"
+						className="size-12 aspect-square has-[>svg]:p-0 border-2 border-background-light-1 bg-transparent cursor-pointer text-foreground-dark-1 hover:text-foreground hover:bg-background-light-2"
 					>
 						<MoreIcon className="size-6" />
 					</Button>

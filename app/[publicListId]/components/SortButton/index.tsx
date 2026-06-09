@@ -90,7 +90,7 @@ export default function SortButton({
 				<Button
 					variant="ghost"
 					data-testid="sort-button-trigger"
-					className="has-[>svg]:px-3 py-4 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1 rounded-full h-8 border border-background-light-1"
+					className="has-[>svg]:px-3 py-4 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1 rounded-full border border-background-light-1"
 				>
 					<SortIcon className="size-4" />
 					{triggerLabel}

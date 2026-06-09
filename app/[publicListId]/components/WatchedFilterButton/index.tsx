@@ -45,7 +45,7 @@ export default function WatchedFilterButton({ value, onChange }: Props) {
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant="ghost"
-					className="has-[>svg]:px-2 py-3 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1 rounded-full h-6"
+					className="has-[>svg]:px-1 py-1 text-foreground-dark-1 flex items-center gap-1 text-xs cursor-pointer hover:bg-background-light-1 rounded-full h-6"
 				>
 					{TRIGGER_LABEL}
 					<ChevronDownIcon className="size-3" aria-hidden="true" />
