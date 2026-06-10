@@ -93,8 +93,8 @@ export default function SubListMoreMenu({
 				<DropdownMenuTrigger asChild>
 					<Button
 						aria-label="その他のメニュー"
-						variant="ghost"
-						className="has-[>svg]:px-2 py-3 text-foreground-dark-1 flex items-center gap-1 cursor-pointer hover:bg-background-light-1"
+						variant="outline"
+						className="border-background-light-1 rounded-full has-[>svg]:px-2 py-3 text-foreground-dark-1 flex items-center gap-1 cursor-pointer hover:bg-background-light-1"
 					>
 						<MoreIcon className="size-5" />
 					</Button>

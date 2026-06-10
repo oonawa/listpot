@@ -57,7 +57,7 @@ export default function SubListSelectDrawerLayout({
 					<DrawerHeader className="items-center pt-2 pb-4">
 						<DrawerTitle className="text-foreground-dark-1 text-xl">サブリストに追加</DrawerTitle>
 					</DrawerHeader>
-					<div className="flex flex-col gap-1 max-w-120">
+					<div className="flex flex-col gap-1 w-full max-w-120">
 						{subLists.map((sl) => (
 							<button
 								key={sl.publicId}

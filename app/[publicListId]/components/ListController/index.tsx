@@ -113,7 +113,7 @@ export default function ListController({
 
 	return (
 		<>
-			<div className="max-w-6xl mx-auto px-4 sm:px-9 py-4">
+			<div className="max-w-6xl w-full mx-auto px-4 sm:px-9 py-4">
 				<search className="w-full px-2 flex items-center rounded-full border border-foreground-dark-3 bg-background transition-[color,box-shadow] focus-within:border-foreground-dark-2 focus-within:ring-foreground-dark-2 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
 					<SearchIcon
 						className="size-6 text-muted-foreground pointer-events-none text-foreground-dark-3"
@@ -139,7 +139,7 @@ export default function ListController({
 					)}
 				</search>
 
-				<div className="flex items-center gap-1 pt-4 pb-2">
+				<div className="w-full flex justify-between sm:justify-start gap-1 pt-4 pb-2 overflow-scroll">
 					<div className="flex items-center gap-1 rounded-full border border-background-light-1 p-1">
 						<div className="text-xs font-bold text-foreground-dark-1 px-1">
 							<FilterIcon className="size-4" />
@@ -156,25 +156,22 @@ export default function ListController({
 							/>
 						</div>
 					</div>
+					<SortButton
+						activeSortKey={sortKey}
+						activeSortOrder={sortOrder}
+						onSort={handleSort}
+					/>
 
-					<div className="flex gap-1">
-						<SortButton
-							activeSortKey={sortKey}
-							activeSortOrder={sortOrder}
-							onSort={handleSort}
+					{mainListPublicId !== publicListId && (
+						<SubListMoreMenu
+							subListPublicId={publicListId}
+							subListName={
+								subLists.find((sl) => sl.publicId === publicListId)?.name ?? ""
+							}
+							mainListPublicId={mainListPublicId}
+							isLoggedIn={isLoggedIn}
 						/>
-						{mainListPublicId !== publicListId && (
-							<SubListMoreMenu
-								subListPublicId={publicListId}
-								subListName={
-									subLists.find((sl) => sl.publicId === publicListId)?.name ??
-									""
-								}
-								mainListPublicId={mainListPublicId}
-								isLoggedIn={isLoggedIn}
-							/>
-						)}
-					</div>
+					)}
 				</div>
 
 				<ActiveFilterChips
