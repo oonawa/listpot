@@ -23,6 +23,7 @@ type LoggedInProps = {
 	movie: ListItem;
 	isLoggedIn: true;
 	publicListId: string;
+	mainListPublicId: string;
 	subLists: SubList[];
 	checkedSubListIds: string[];
 	sortKey?: SortKey;
@@ -33,6 +34,7 @@ type GuestProps = {
 	movie: ListItem;
 	isLoggedIn: false;
 	publicListId: string;
+	mainListPublicId: string;
 	sortKey?: SortKey;
 	index: number;
 };
@@ -61,7 +63,7 @@ const formatDateLabel = (
 };
 
 export default function Item(props: Props) {
-	const { movie, isLoggedIn, publicListId, sortKey, index } = props;
+	const { movie, isLoggedIn, mainListPublicId, sortKey, index } = props;
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
 	const store = useAtomValue(risutopottoAtom);
@@ -92,7 +94,7 @@ export default function Item(props: Props) {
 					isOpen={isDrawerOpen}
 					onClose={() => setIsDrawerOpen(false)}
 					listItemId={movie.listItemId}
-					publicListId={publicListId}
+					mainListPublicId={mainListPublicId}
 					subLists={props.subLists}
 					checkedSubListIds={props.checkedSubListIds}
 				/>
@@ -101,7 +103,7 @@ export default function Item(props: Props) {
 					isOpen={isDrawerOpen}
 					onClose={() => setIsDrawerOpen(false)}
 					listItemId={movie.listItemId}
-					publicListId={publicListId}
+					mainListPublicId={mainListPublicId}
 					subLists={localSubLists}
 					checkedSubListIds={localCheckedSubListIds}
 				/>

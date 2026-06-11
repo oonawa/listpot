@@ -11,47 +11,79 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createSubList } from "@/features/list/actions/createSubList";
+import { createSubListWithItem } from "@/features/list/actions/createSubListWithItem";
 import { useListLocalStorageRepository } from "@/features/list/hooks/useListLocalStorageRepository";
 
 type Props = {
 	isOpen: boolean;
 	onClose: () => void;
-	publicListId: string;
+	mainListPublicId: string;
 	isLoggedIn: boolean;
+	listItemId?: string;
 };
+
+const ERROR_MESSAGE = "作成できませんでした。時間を置いて再度お試しください。";
 
 export default function SubListCreateModal({
 	isOpen,
 	onClose,
-	publicListId,
+	mainListPublicId,
 	isLoggedIn,
+	listItemId,
 }: Props) {
 	const [name, setName] = useState("");
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
-	const { createSubList: createLocalSubList } = useListLocalStorageRepository();
+	const {
+		createSubList: createLocalSubList,
+		createSubListWithItem: createLocalSubListWithItem,
+	} = useListLocalStorageRepository();
+
+	const handleClose = () => {
+		setErrorMessage(null);
+		setName("");
+		onClose();
+	};
 
 	const handleSubmit = () => {
 		const trimmedName = name.trim();
 		if (!trimmedName) return;
 
+		setErrorMessage(null);
+
 		startTransition(async () => {
 			if (isLoggedIn) {
-				const result = await createSubList({
-					publicListId,
-					name: trimmedName,
-				});
+				const result = listItemId
+					? await createSubListWithItem({
+							publicListId: mainListPublicId,
+							name: trimmedName,
+							listItemPublicId: listItemId,
+						})
+					: await createSubList({
+							publicListId: mainListPublicId,
+							name: trimmedName,
+						});
+
 				if (result.success) {
-					onClose();
 					setName("");
+					setErrorMessage(null);
+					onClose();
 					router.push(`/${result.data.subListPublicId}`);
+					return;
 				}
-			} else {
-				const subListId = createLocalSubList(trimmedName);
-				onClose();
-				setName("");
-				router.push(`/${subListId}`);
+
+				setErrorMessage(ERROR_MESSAGE);
+				return;
 			}
+
+			const subListId = listItemId
+				? createLocalSubListWithItem(trimmedName, listItemId)
+				: createLocalSubList(trimmedName);
+			setName("");
+			setErrorMessage(null);
+			onClose();
+			router.push(`/${subListId}`);
 		});
 	};
 
@@ -59,7 +91,7 @@ export default function SubListCreateModal({
 		<Dialog
 			open={isOpen}
 			onOpenChange={(open) => {
-				if (!open) onClose();
+				if (!open) handleClose();
 			}}
 		>
 			<DialogContent className="border-background-light-2 pb-10">
@@ -76,6 +108,16 @@ export default function SubListCreateModal({
 						className="w-full border border-background-light-2 rounded-md p-2 bg-transparent text-foreground placeholder:text-foreground-dark-2 focus:outline-none focus:border-background-light-2 focus-visible:ring-background-light-3"
 					/>
 				</div>
+				{errorMessage && (
+					<p
+						role="alert"
+						className="pb-2 text-center text-sm text-foreground-dark-1"
+					>
+						<span className="underline underline-offset-4 decoration-4 decoration-red-light-2">
+							{errorMessage}
+						</span>
+					</p>
+				)}
 				<Button
 					disabled={isPending || !name.trim()}
 					onClick={handleSubmit}
@@ -85,7 +127,7 @@ export default function SubListCreateModal({
 				</Button>
 				<Button
 					variant={"outline"}
-					onClick={onClose}
+					onClick={handleClose}
 					className="border-background-light-2 cursor-pointer text-foreground-dark-1 hover:bg-background-light-1 hover:border-background-light-3"
 				>
 					キャンセル

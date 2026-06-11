@@ -22,9 +22,9 @@ type Props = {
 	checkedIds: Set<string>;
 	isPending: boolean;
 	onToggle: (publicId: string) => void;
-	onCreateClick: () => void;
-	publicListId: string;
+	mainListPublicId: string;
 	isLoggedIn: boolean;
+	listItemId?: string;
 };
 
 export default function SubListSelectDrawerLayout({
@@ -34,14 +34,13 @@ export default function SubListSelectDrawerLayout({
 	checkedIds,
 	isPending,
 	onToggle,
-	onCreateClick,
-	publicListId,
+	mainListPublicId,
 	isLoggedIn,
+	listItemId,
 }: Props) {
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
 	const handleCreateClick = () => {
-		onCreateClick();
 		setIsCreateModalOpen(true);
 	};
 
@@ -108,8 +107,9 @@ export default function SubListSelectDrawerLayout({
 			<SubListCreateModal
 				isOpen={isCreateModalOpen}
 				onClose={() => setIsCreateModalOpen(false)}
-				publicListId={publicListId}
+				mainListPublicId={mainListPublicId}
 				isLoggedIn={isLoggedIn}
+				listItemId={listItemId}
 			/>
 		</>
 	);

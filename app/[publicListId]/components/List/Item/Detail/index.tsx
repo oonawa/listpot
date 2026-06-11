@@ -15,13 +15,13 @@ type SubList = {
 };
 
 type Props = {
-	publicListId: string;
+	mainListPublicId: string;
 	subLists: SubList[];
 	checkedSubListIdsMap: Map<string, string[]>;
 };
 
 export default function ListItemDetail({
-	publicListId,
+	mainListPublicId,
 	subLists,
 	checkedSubListIdsMap,
 }: Props) {
@@ -68,7 +68,7 @@ export default function ListItemDetail({
 							<BottomSheetContent withPadding>
 								<RegisteredListItem
 									movie={movie}
-									publicListId={publicListId}
+									mainListPublicId={mainListPublicId}
 									subLists={subLists}
 									checkedSubListIds={
 										checkedSubListIdsMap?.get(movie.listItemId) ?? []
