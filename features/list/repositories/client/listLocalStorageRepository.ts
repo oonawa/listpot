@@ -125,6 +125,24 @@ export function createSubList(
 	return subListId;
 }
 
+export function createSubListWithItem(
+	store: Store,
+	name: string,
+	listItemId: string,
+	generateId: () => string = () => crypto.randomUUID(),
+): string {
+	const current = store.get(risutopottoAtom);
+	const subListId = generateId();
+	store.set(risutopottoAtom, {
+		...current,
+		subLists: [
+			...current.subLists,
+			{ subListId, name, listItemIds: [listItemId] },
+		],
+	});
+	return subListId;
+}
+
 export function addSubListItem(
 	store: Store,
 	subListId: string,

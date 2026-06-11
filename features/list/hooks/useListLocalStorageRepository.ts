@@ -8,6 +8,7 @@ import {
 	clearLocalList,
 	clearSubLists,
 	createSubList,
+	createSubListWithItem,
 	deleteSubList,
 	getListId,
 	getListItems,
@@ -41,6 +42,8 @@ export function useListLocalStorageRepository() {
 		parseLocalList: () => parseLocalList(store),
 		getSubLists: () => getSubLists(store),
 		createSubList: (name: string) => createSubList(store, name),
+		createSubListWithItem: (name: string, listItemId: string) =>
+			createSubListWithItem(store, name, listItemId),
 		addSubListItem: (subListId: string, listItemId: string) =>
 			addSubListItem(store, subListId, listItemId),
 		removeSubListItem: (subListId: string, listItemId: string) =>
