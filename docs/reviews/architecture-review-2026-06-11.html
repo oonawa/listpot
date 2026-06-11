@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>りすとぽっと コードベース・アーキテクチャレビュー（2026-06-11）</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-card: #181b24;
+    --bg-card-2: #1f2330;
+    --text: #e6e8ee;
+    --text-dim: #a3a9b8;
+    --border: #2a2f3d;
+    --accent: #6ea8fe;
+    --crit: #ff5d6c;
+    --high: #ff9f43;
+    --med: #ffd34e;
+    --good: #4ade80;
+    --info: #6ea8fe;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.75;
+    font-size: 16px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px 96px; }
+
+  /* Header */
+  header.hero {
+    background: linear-gradient(135deg, #1a2235 0%, #11131c 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 20px 40px;
+    text-align: center;
+  }
+  header.hero .inner { max-width: 960px; margin: 0 auto; }
+  header.hero h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: .02em; }
+  header.hero p.sub { color: var(--text-dim); margin: 0; font-size: 15px; }
+  header.hero .meta { margin-top: 18px; font-size: 13px; color: var(--text-dim); }
+  header.hero .meta span { display: inline-block; margin: 0 8px; }
+
+  .disclaimer {
+    background: rgba(110,168,254,.08);
+    border: 1px solid rgba(110,168,254,.35);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin: 28px 0 8px;
+  }
+  .disclaimer strong { color: var(--accent); }
+
+  h2.section {
+    font-size: 23px;
+    margin: 56px 0 8px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2.section .num {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--bg);
+    background: var(--accent);
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-weight: 700;
+  }
+  h3.sub { font-size: 17px; margin: 32px 0 12px; color: var(--text); }
+  p.lead { color: var(--text-dim); margin: 6px 0 20px; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 2px 9px;
+    border-radius: 999px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .b-crit { background: rgba(255,93,108,.16); color: var(--crit); border: 1px solid rgba(255,93,108,.5); }
+  .b-high { background: rgba(255,159,67,.16); color: var(--high); border: 1px solid rgba(255,159,67,.5); }
+  .b-med  { background: rgba(255,211,78,.14); color: var(--med);  border: 1px solid rgba(255,211,78,.45); }
+  .b-good { background: rgba(74,222,128,.14); color: var(--good); border: 1px solid rgba(74,222,128,.45); }
+  .b-info { background: rgba(110,168,254,.14); color: var(--info); border: 1px solid rgba(110,168,254,.45); }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 14px 0;
+  }
+  .card.crit { border-left-color: var(--crit); }
+  .card.high { border-left-color: var(--high); }
+  .card.med  { border-left-color: var(--med); }
+  .card.good { border-left-color: var(--good); }
+  .card h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .card .body { font-size: 14.5px; color: var(--text); }
+  .card .body p { margin: 8px 0; }
+  .card dl { margin: 10px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
+  .card dt { color: var(--text-dim); white-space: nowrap; }
+  .card dd { margin: 0; }
+  code {
+    font-family: var(--mono);
+    font-size: 12.8px;
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    word-break: break-all;
+  }
+
+  /* Summary scorecards */
+  .scorecards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+  .scorecard {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  .scorecard .label { font-size: 13px; color: var(--text-dim); }
+  .scorecard .score { font-size: 34px; font-weight: 800; margin: 6px 0 2px; }
+  .scorecard .max { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+  .scorecard .note { font-size: 12px; color: var(--text-dim); }
+  .s-sec .score { color: var(--high); }
+  .s-arch .score { color: var(--good); }
+  .s-perf .score { color: var(--med); }
+
+  table.summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+  }
+  table.summary th, table.summary td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.summary th { background: var(--bg-card-2); color: var(--text-dim); font-weight: 600; }
+  table.summary tr:nth-child(even) td { background: rgba(255,255,255,.015); }
+
+  /* TOC */
+  nav.toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 28px 0;
+  }
+  nav.toc strong { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dim); }
+  nav.toc ol { margin: 0; padding-left: 20px; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  nav.toc li { margin: 3px 0; }
+
+  .product-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 20px 0;
+  }
+  .product-box h3 { margin-top: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip { font-size: 12px; background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; color: var(--text-dim); }
+
+  ul.tight { margin: 8px 0; padding-left: 22px; }
+  ul.tight li { margin: 4px 0; }
+
+  footer { border-top: 1px solid var(--border); margin-top: 60px; padding-top: 20px; color: var(--text-dim); font-size: 13px; text-align: center; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; font-size: 12.5px; color: var(--text-dim); align-items: center; }
+
+  @media (max-width: 640px) {
+    .scorecards { grid-template-columns: 1fr; }
+    .card dl { grid-template-columns: 1fr; gap: 2px; }
+    .card dt { margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <h1>りすとぽっと コードベース・アーキテクチャレビュー</h1>
+    <p class="sub">映画ウォッチリスト管理 SaaS / Next.js 16 ・ React 19 ・ Turso(libSQL) ・ Drizzle ORM ・ Tailwind CSS v4</p>
+    <div class="meta">
+      <span>📅 2026-06-11</span>
+      <span>🔎 観点: 設計 / セキュリティ / パフォーマンス</span>
+      <span>📦 リポジトリ: oonawa/listpot</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="disclaimer">
+    <strong>本書について：</strong>これはコードベースの<strong>レビュー文書</strong>です。実コードを読んで裏取りした所見と推奨対応をまとめたもので、本PRにコードの修正そのものは含みません。指摘は「重要度（影響 × 確度）の高い順」に配置しています。
+  </div>
+
+  <!-- ============ Executive Summary ============ -->
+  <h2 class="section"><span class="num">00</span>エグゼクティブサマリ</h2>
+  <p class="lead">全体として、個人/ポートフォリオ規模のSaaSとしては<strong>非常に良く設計されたコードベース</strong>です。<code>Result&lt;T&gt;</code> による統一エラー処理、features 層の明快な責務分割、暗号化やレート制限といった防御の基礎が揃っています。一方で、<strong>最優先で塞ぐべき具体的な穴が1つ</strong>あります — 更新系 Server Action における<strong>所有権（認可）チェックの欠落（IDOR）</strong>です。参照系では正しく実装されているだけに、ここだけ一貫性が崩れています。</p>
+
+  <div class="scorecards">
+    <div class="scorecard s-sec">
+      <div class="label">🔐 セキュリティ</div>
+      <div class="score">6.0<span class="max"> / 10</span></div>
+      <div class="note">基礎は堅牢。IDOR修正で 8.5 相当へ</div>
+    </div>
+    <div class="scorecard s-arch">
+      <div class="label">🏛 アーキテクチャ</div>
+      <div class="score">8.5<span class="max"> / 10</span></div>
+      <div class="note">層分割・Result型・TDDが秀逸</div>
+    </div>
+    <div class="scorecard s-perf">
+      <div class="label">⚡ パフォーマンス</div>
+      <div class="score">6.5<span class="max"> / 10</span></div>
+      <div class="note">画像/キャッシュ最適化が伸びしろ</div>
+    </div>
+  </div>
+
+  <table class="summary">
+    <thead>
+      <tr><th>観点</th><th>結論</th><th>最重要トピック</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>セキュリティ</strong></td>
+        <td>認証・暗号化の基礎は良好だが、更新系の<strong>認可が一貫していない</strong>。</td>
+        <td><span class="badge b-crit">CRITICAL</span> 更新系ActionのIDOR（所有権未チェック）</td>
+      </tr>
+      <tr>
+        <td><strong>アーキテクチャ</strong></td>
+        <td>プロダクト規模に対して過不足のない、模範的なレイヤード構成。</td>
+        <td><span class="badge b-good">GOOD</span> Result型・features層・TDDワークフロー</td>
+      </tr>
+      <tr>
+        <td><strong>パフォーマンス</strong></td>
+        <td>サーバー側の取得設計は堅実。フロントの画像/キャッシュに改善余地。</td>
+        <td><span class="badge b-high">HIGH</span> <code>next/image</code> 未使用・ページキャッシュ無し</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="product-box">
+    <h3>プロダクトの性質と、それに対する適性</h3>
+    <p style="color:var(--text-dim);margin-top:4px;">「りすとぽっと」は、Netflix / Prime Video / Disney+ / Hulu / U-NEXT などの配信URLから映画を1つのリストに集約し、ルーレットで観る作品を選んだり、サブリストで分類したりできるウォッチリスト管理サービスです。<strong>ユーザー1人 = 1リスト</strong>、パスワードレス認証、未ログイン時は LocalStorage で動作、という個人ユーザー向けの軽量SaaSです。</p>
+    <ul class="tight" style="color:var(--text-dim);">
+      <li><strong>適性◎：</strong>更新頻度が低く読み取り中心の個人データ → Server Components 中心・短期キャッシュと相性が良い（ただしキャッシュは未実装、後述）。</li>
+      <li><strong>適性◎：</strong>未ログイン利用を LocalStorage、ログイン利用をDBで同一インターフェースに抽象化 → プロダクトの「気軽に試せる」性質に合致。</li>
+      <li><strong>要注意：</strong>公開リスト（共有URL）という性質上、他人のIDが推測・流出しやすい → だからこそ更新系の所有権チェックが致命的に重要。</li>
+    </ul>
+    <div class="chips">
+      <span class="chip">Next.js 16 (App Router)</span>
+      <span class="chip">React 19</span>
+      <span class="chip">Turso / libSQL</span>
+      <span class="chip">Drizzle ORM</span>
+      <span class="chip">Tailwind CSS v4</span>
+      <span class="chip">Jotai</span>
+      <span class="chip">Vitest + Playwright</span>
+      <span class="chip">パスワードレス認証</span>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <strong>目次（重要度順）</strong>
+    <ol>
+      <li><a href="#sec">セキュリティ</a> — 最重要の認可欠落を含む</li>
+      <li><a href="#arch">アーキテクチャ / ソフトウェア設計</a></li>
+      <li><a href="#perf">パフォーマンス</a></li>
+      <li><a href="#action">対応の優先順位（まとめ）</a></li>
+    </ol>
+    <div class="legend">
+      重要度:
+      <span class="badge b-crit">CRITICAL</span>
+      <span class="badge b-high">HIGH</span>
+      <span class="badge b-med">MEDIUM</span>
+      <span class="badge b-good">GOOD / 強み</span>
+    </div>
+  </nav>
+
+  <!-- ============ Security ============ -->
+  <h2 class="section" id="sec"><span class="num">01</span>🔐 セキュリティ</h2>
+  <p class="lead">認証・暗号化・入力バリデーションの基礎は堅実に実装されています。最大の問題は、<strong>参照系には所有権チェックがあるのに更新系にはない</strong>という非対称性です。共有URLでIDが露出しやすいプロダクト特性と相まって、影響が大きくなります。</p>
+
+  <div class="card crit">
+    <h4><span class="badge b-crit">CRITICAL</span> 更新系 Server Action の所有権チェック欠落（IDOR）</h4>
+    <div class="body">
+      <p>以下の更新系 Action は <code>publicId</code>（UUID）のみを受け取り、<strong>「そのリソースがログインユーザーのものか」を一切照合していません</strong>。他人の <code>listItemId</code> / <code>publicListId</code> / <code>subListPublicId</code> を知っていれば、第三者が削除・改変・追加できます。共有リスト機能でIDが他者の目に触れる本プロダクトでは、現実的な攻撃面です。</p>
+      <ul class="tight">
+        <li><code>features/list/actions/removeListItem.ts</code> → <code>removeListItemService.ts</code> → <code>deleteListItemByPublicId(publicId)</code>（<code>publicId</code> だけで <code>DELETE</code>）</li>
+        <li><code>features/list/actions/toggleWatchStatus.ts</code> → <code>toggleWatchStatusService.ts</code>（userId 照合なし）</li>
+        <li><code>features/list/actions/storeListItem.ts</code> → <code>storeListItemService.ts:20</code> の <code>findListIdByPublicId(publicListId)</code>（任意リストへ追加・上書き可能）</li>
+        <li><code>features/list/actions/addSubListItem.ts</code> / <code>removeSubListItem.ts</code> → <code>manageSubListItemService.ts</code>（subList と listItem の所有者関係を未検証）</li>
+      </ul>
+      <p><strong>対照（正しく書けている例）：</strong>参照系の <code>getUserMovieList(publicListId, userId)</code> は <code>app/[publicListId]/page.tsx:24-30</code> で <code>currentUserId()</code> 取得後に userId を渡して照合しています。サブリストの <code>deleteSubListService</code> / <code>renameSubListService</code> も <code>subList.listId === userListId</code> を確認済み。<strong>つまり正しいパターンは既にコードベース内に存在しており、更新系へ横展開するだけ</strong>です。</p>
+      <dl>
+        <dt>影響</dt><dd>第三者による他ユーザーのリストアイテム削除・既読状態改変・サブリスト汚染・任意リストへの追加。</dd>
+        <dt>推奨対応</dt><dd>各更新系 Action 冒頭で <code>currentUserId()</code> を取得し、service 層を <code>userListId(userId, publicListId)</code> 相当（所有者照合つき検索）に統一する。参照系・サブリスト削除系と同じ作法に揃える。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card high">
+    <h4><span class="badge b-high">HIGH</span> セキュリティヘッダが未設定</h4>
+    <div class="body">
+      <p><code>next.config.ts</code> は <code>devIndicators: false</code> のみで、CSP / HSTS / X-Frame-Options / X-Content-Type-Options / Referrer-Policy などのレスポンスヘッダが設定されていません。クリックジャッキングやMIMEスニッフィング、XSSの被害拡大に対する多層防御が欠けています。</p>
+      <dl>
+        <dt>推奨対応</dt><dd><code>next.config.ts</code> の <code>headers()</code> もしくは middleware で主要セキュリティヘッダを付与。最低限 <code>X-Frame-Options: DENY</code> / <code>X-Content-Type-Options: nosniff</code> / <code>Strict-Transport-Security</code>、可能なら CSP を導入。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card high">
+    <h4><span class="badge b-high">HIGH</span> テスト用の実シークレットがリポジトリにコミットされている</h4>
+    <div class="body">
+      <p><code>.env.test</code> に <code>JWT_SECRET</code> / <code>ENCRYPTION_KEY</code> / <code>HMAC_SECRET</code> の具体値が含まれています。テスト専用だとしても、鍵の値がGit履歴に残るのは避けたい慣行です。万一、同じ値が他環境に流用されていれば本番影響に直結します。</p>
+      <dl>
+        <dt>推奨対応</dt><dd><code>.env.test</code> を <code>.gitignore</code> 化し、CI ではダミー値を環境変数で注入。本番の鍵がこれらと共有されていないことを確認。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card med">
+    <h4><span class="badge b-med">MEDIUM</span> 入力バリデーションの不整合・緩さ</h4>
+    <div class="body">
+      <ul class="tight">
+        <li><code>renameSubList.ts</code> の <code>name</code> は <code>z.string().min(1)</code> のみで <strong>最大長がない</strong>。一方 <code>createSubList.ts</code> は <code>.max(50)</code> あり → 不整合。過大ペイロード・表示崩れの余地。</li>
+        <li>URLは <code>z.url()</code> で形式検証されるが、<code>javascript:</code> 等のスキーム制限は明示されていない。表示時のエスケープに依存。</li>
+      </ul>
+      <dl>
+        <dt>推奨対応</dt><dd><code>renameSubList</code> に <code>.max(50)</code> を追加して <code>createSubList</code> と揃える。URLは許可スキーム（http/https）をホワイトリスト化。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card med">
+    <h4><span class="badge b-med">MEDIUM</span> レート制限のクライアントIP判定 / 依存パッケージの既知脆弱性</h4>
+    <div class="body">
+      <ul class="tight">
+        <li><code>sendLoginCode.ts</code> のレート制限は <code>x-forwarded-for</code> の先頭値を素朴に採用。信頼できるプロキシ前提が無いと、ヘッダ偽装でレート制限を回避され得る。</li>
+        <li><code>npm audit</code> で HIGH 相当の指摘（<code>@react-email/preview-server</code>、<code>drizzle-orm</code> 経由の間接依存など）。多くは dev 依存だが棚卸しが必要。</li>
+      </ul>
+      <dl>
+        <dt>推奨対応</dt><dd>信頼プロキシ段数を踏まえたIP抽出、または認証系は IP+メールの複合キーで制限。依存は <code>npm audit</code> 結果を本番/開発で切り分けて計画的に更新。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> 防御の基礎は堅牢</h4>
+    <div class="body">
+      <ul class="tight">
+        <li>メールアドレスを <strong>AES-256-GCM で暗号化</strong>し、<strong>HMAC-SHA256</strong> で検索可能化（<code>encryption.ts</code>）。ログインコードは SHA-256 ハッシュ保存。</li>
+        <li>セッショントークンは <strong>HS256 JWT + deviceId + expiresAt</strong> を多層検証（<code>verifySessionTokenService.ts</code>）。アカウント削除など高リスク操作は <strong>reauth token</strong> で再認証（<code>deleteUser.ts</code>）。</li>
+        <li>全 Server Action で <strong>Zod の <code>safeParse</code></strong> による入力検証。DBアクセスは Drizzle のクエリビルダで<strong>パラメタライズド</strong>（生SQLはテストのリセット処理のみ）。</li>
+        <li>Cookie は <code>httpOnly</code> / <code>sameSite: "lax"</code> / 本番 <code>secure</code>。更新は Server Actions 経由で <strong>CSRF 耐性</strong>。Markdown は許可タグのホワイトリスト方式で <code>dangerouslySetInnerHTML</code> 不使用。</li>
+        <li>認証コードのレート制限あり（検証10回/送信5回・15分窓、IPはHMAC保存でプライバシー配慮）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ Architecture ============ -->
+  <h2 class="section" id="arch"><span class="num">02</span>🏛 アーキテクチャ / ソフトウェア設計</h2>
+  <p class="lead">このプロダクトの規模（個人向け軽量SaaS、開発者は少人数想定）に対して、レイヤリングと規約が<strong>過剰でも不足でもなく適切</strong>です。AIエージェント駆動の開発を意識した手順書（docs/）まで整っており、保守性が高い設計です。</p>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> <code>Result&lt;T&gt;</code> 型による統一エラーハンドリング</h4>
+    <div class="body">
+      <p><code>features/shared/types/Result.ts</code> の判別可能ユニオンを全 Action / Service / Repository が返却。例外スローと戻り値の混在がなく、エラーコードも7種に標準化。<code>result.success</code> で型が絞り込まれ、<code>data</code> アクセスの安全性が型で保証されます。プロダクトの「失敗が普通に起こる外部連携（TMDB/メール送信）」と相性が良い選択です。</p>
+    </div>
+  </div>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> features 層の明快な単方向分割</h4>
+    <div class="body">
+      <p><code>Action（入力検証＋副作用）→ Service（業務ロジック＋認可）→ Repository（DB/外部API）</code> の一方向依存。<code>auth / list / movieDatabase / user / shared</code> に機能分割され、責務境界が明確です。Repository は optional な <code>tx</code> を受け取る <strong>トランザクション対応</strong>設計（<code>authTokenRepository.ts</code>）で、同一関数を単独実行とトランザクション内の双方で再利用できます。</p>
+      <p style="color:var(--text-dim);">※ ただしセキュリティ章の通り、<strong>「認可は Service 層で行う」という規約が更新系で守られていない</strong>箇所があります。設計の型は良いので、規約の徹底が課題です。</p>
+    </div>
+  </div>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> RSC / Client Component の使い分け・LocalStorage 抽象化</h4>
+    <div class="body">
+      <ul class="tight">
+        <li>認可・初期データ取得は Server Component（<code>app/layout.tsx</code>, <code>app/page.tsx</code>, <code>app/[publicListId]/page.tsx</code>）、対話的UIは Client Component と整理されている。</li>
+        <li>未ログイン（LocalStorage）とログイン（DB）を <strong>同一シグネチャの Repository インターフェース</strong>に抽象化（<code>useListLocalStorageRepository.ts</code> / Jotai）。UI層の分岐が最小限で、プロダクトの「ログイン不要で試せる」要件をきれいに満たしている。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> DBスキーマの正規化と開発ワークフロー</h4>
+    <div class="body">
+      <ul class="tight">
+        <li>M:N関連（<code>movie_directors</code>, <code>sub_list_items</code>）を中間テーブル + <code>uniqueIndex</code> で正規化し、重複登録を制約レベルで防止。TMDBデータは <code>movie_cache</code> 別テーブルで TTL を制御。</li>
+        <li><code>docs/</code> に4フェーズTDDワークフロー（テスト計画→実装計画→TDD→検証）、コーディングスタイル、レビュー方針を明文化。Action層起点の Medium テストを中心に据える方針も明確。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card med">
+    <h4><span class="badge b-med">MEDIUM</span> 改善余地（保守性）</h4>
+    <div class="body">
+      <ul class="tight">
+        <li><strong>認可規約の明文化と徹底：</strong>「全更新系 Action は所有権を Service 層で照合する」をワークフロー/レビュー観点に追加し、テンプレ化する（最重要課題と直結）。</li>
+        <li><code>storeListItem.ts:29</code> の <code>console.error</code> は正常系（バリデーション失敗）で本番ログに出る。開発時のみに絞るか削除。</li>
+        <li><code>ListItem</code> 型が draft / 既読状態など多くの分岐を抱え複雑。役割別（DraftListItem / ServerListItem など）への分割を検討。</li>
+        <li>E2E がビルド必須で1回3分前後。<code>globalSetup</code> での migrate/seed 一度きり化など起動短縮の余地。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ Performance ============ -->
+  <h2 class="section" id="perf"><span class="num">03</span>⚡ パフォーマンス</h2>
+  <p class="lead">サーバー側のデータ取得（並列化・JOIN・インデックス・接続シングルトン化）は堅実です。伸びしろはフロント配信側、特に<strong>画像最適化とページキャッシュ</strong>に集中しています。映画ポスター画像を多用するプロダクトなので、画像最適化の効果は特に大きいはずです。</p>
+
+  <div class="card high">
+    <h4><span class="badge b-high">HIGH</span> <code>next/image</code> 未使用（全て生 <code>&lt;img&gt;</code>）</h4>
+    <div class="body">
+      <p>映画ポスターを多数表示するにもかかわらず、<code>ListItem/Content/Detail</code>、<code>SearchResult</code>、<code>List/Item</code> など全て生の <code>&lt;img&gt;</code> です。<code>withTmdbImageSize()</code> でサイズ指定はするものの、<strong>srcset（レスポンシブ）/ WebP変換 / lazy loading / width-height によるCLS対策が無い</strong>。映画リスト中心のUIでは LCP・CLS・転送量に直結します。</p>
+      <dl>
+        <dt>推奨対応</dt><dd><code>next/image</code> へ移行し、TMDBドメインを <code>images.remotePatterns</code> に登録。サイズ確定で CLS 抑制、自動 WebP/AVIF と lazy loading を享受。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card high">
+    <h4><span class="badge b-high">HIGH</span> ページレベルのキャッシュ戦略が無い</h4>
+    <div class="body">
+      <p><code>revalidate</code> / <code>"use cache"</code> / <code>unstable_cache</code> がいずれも未使用で、各ページが毎リクエストで fresh にDBアクセスします。映画情報自体は6ヶ月キャッシュ（<code>getMovieWithCacheService.ts</code>）されている一方、<strong>ページ描画レベルのキャッシュが空白</strong>。更新頻度が低い個人リストという性質上、短期キャッシュの恩恵が大きい領域です。</p>
+      <dl>
+        <dt>推奨対応</dt><dd>ユーザー固有データのため長期ISRは避けつつ、共有リスト表示などに短期 <code>revalidate</code> やタグ無効化（<code>revalidateTag</code>）を導入。更新系Actionから対象タグを無効化する。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card med">
+    <h4><span class="badge b-med">MEDIUM</span> サブリスト周りの反復クエリ / 全件取得</h4>
+    <div class="body">
+      <ul class="tight">
+        <li><code>getSubLists()</code> → <code>findSubListsByListId()</code> と <code>getCheckedSubListIds()</code> → <code>findCheckedSubListIdsByListId()</code> が同一リストへ複数回アクセス。統合の余地。</li>
+        <li><code>findCheckedSubListIdsByListId()</code> はリスト配下の全サブリストアイテムを取得するため、リスト肥大時にコスト増。</li>
+      </ul>
+      <dl>
+        <dt>推奨対応</dt><dd>1回のJOINクエリへ統合、または必要列・必要範囲に絞る。<code>Promise.all</code> 済みの並列化はそのまま活かす。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card med">
+    <h4><span class="badge b-med">MEDIUM</span> クライアントバンドルと Suspense 活用</h4>
+    <div class="body">
+      <ul class="tight">
+        <li><code>"use client"</code> が約39ファイルとやや広め。<code>motion</code> / <code>jotai</code> / <code>html-react-parser</code> 等の同梱量を <code>@next/bundle-analyzer</code> で実測したい。</li>
+        <li>並列クエリの結果が揃うまでページ全体がブロックされ、<strong>Suspense / streaming による段階表示が未活用</strong>。<code>docs/frontend.md</code> の方針（busy/loading/done）と実装の間にギャップ。</li>
+      </ul>
+      <dl>
+        <dt>推奨対応</dt><dd>重いリスト領域を Suspense 境界で分割しストリーミング。dynamic import の <code>ssr:false</code> が本当に必要か精査。</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card good">
+    <h4><span class="badge b-good">GOOD</span> サーバー側データ取得は堅実</h4>
+    <div class="body">
+      <ul class="tight">
+        <li>Server Components で直接フェッチし、非依存クエリは <code>Promise.all</code> で並列化（<code>app/[publicListId]/components/List/index.tsx</code>）。</li>
+        <li>複数テーブルを単一クエリの JOIN で取得（<code>userListItemsByListId()</code>）、重複防止 <code>uniqueIndex</code> 3種、複数挿入はバッチ＋トランザクション。</li>
+        <li>Turso(libSQL) クライアントは <code>db/client.ts</code> で<strong>シングルトン化</strong>。リクエスト毎の再生成がない。dynamic import で初期JSを抑制している箇所もある。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ Action plan ============ -->
+  <h2 class="section" id="action"><span class="num">04</span>✅ 対応の優先順位（まとめ）</h2>
+  <table class="summary">
+    <thead>
+      <tr><th style="width:90px;">優先度</th><th>対応</th><th>領域</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="badge b-crit">1</span></td><td>更新系 Action（<code>removeListItem</code> / <code>storeListItem</code> / <code>toggleWatchStatus</code> / <code>add</code>・<code>removeSubListItem</code>）に所有権チェックを追加。参照系・サブリスト削除系と同じ作法に統一。</td><td>セキュリティ</td></tr>
+      <tr><td><span class="badge b-high">2</span></td><td>セキュリティヘッダ（X-Frame-Options / nosniff / HSTS / CSP）を <code>next.config.ts</code> か middleware で付与。</td><td>セキュリティ</td></tr>
+      <tr><td><span class="badge b-high">3</span></td><td><code>.env.test</code> を gitignore 化し、CIで注入。本番鍵との分離を確認。</td><td>セキュリティ</td></tr>
+      <tr><td><span class="badge b-high">4</span></td><td>映画ポスターを <code>next/image</code> 化（TMDBドメイン登録、CLS/転送量改善）。</td><td>パフォーマンス</td></tr>
+      <tr><td><span class="badge b-high">5</span></td><td>ページ/データキャッシュ（短期 <code>revalidate</code> + <code>revalidateTag</code>）を導入。</td><td>パフォーマンス</td></tr>
+      <tr><td><span class="badge b-med">6</span></td><td><code>renameSubList</code> に <code>.max(50)</code>、URLスキームのホワイトリスト化、レート制限のIP判定強化。</td><td>セキュリティ</td></tr>
+      <tr><td><span class="badge b-med">7</span></td><td>サブリスト反復クエリの統合、Suspense/streaming 導入、bundle 実測。</td><td>パフォーマンス</td></tr>
+      <tr><td><span class="badge b-med">8</span></td><td>認可規約の明文化、<code>console.error</code> 整理、<code>ListItem</code> 型分割。</td><td>アーキテクチャ</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    りすとぽっと コードベースレビュー｜2026-06-11 作成<br />
+    本書はレビュー所見であり、コードの変更を含みません。指摘は重要度（影響 × 確度）順に配置しています。
+  </footer>
+
+</div>
+</body>
+</html>
