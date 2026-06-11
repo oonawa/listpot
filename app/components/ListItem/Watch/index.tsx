@@ -24,7 +24,7 @@ type Props = {
 	handleSearch: () => void;
 	handleRemove: () => void;
 	handleToggleWatch?: () => void;
-	publicListId: string;
+	mainListPublicId: string;
 	subLists?: SubList[];
 	checkedSubListIds?: string[];
 };
@@ -38,7 +38,7 @@ export default function WatchListItem({
 	handleSearch,
 	handleRemove,
 	handleToggleWatch,
-	publicListId,
+	mainListPublicId,
 	subLists,
 	checkedSubListIds,
 }: Props) {
@@ -61,7 +61,7 @@ export default function WatchListItem({
 							searchDisabled={isSearchPending}
 							removeDisabled={isRemovePending}
 							listItemId={"listItemId" in movie ? movie.listItemId : ""}
-							publicListId={publicListId}
+							mainListPublicId={mainListPublicId}
 							isLoggedIn={true}
 							subLists={subLists ?? []}
 							checkedSubListIds={checkedSubListIds ?? []}
@@ -73,7 +73,7 @@ export default function WatchListItem({
 							searchDisabled={isSearchPending}
 							removeDisabled={isRemovePending}
 							listItemId={"listItemId" in movie ? movie.listItemId : ""}
-							publicListId={publicListId}
+							mainListPublicId={mainListPublicId}
 							isLoggedIn={false}
 						/>
 					)

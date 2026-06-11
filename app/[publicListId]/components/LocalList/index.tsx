@@ -77,7 +77,7 @@ export default function LocalList({ publicListId }: Props) {
 				isLoggedIn={false}
 			/>
 			<ListItemDetail
-				publicListId={publicListId}
+				mainListPublicId={listId}
 				subLists={subLists}
 				checkedSubListIdsMap={checkedSubListIdsMap}
 			/>

@@ -29,7 +29,7 @@ type SubList = {
 
 type Props = {
 	movie: ListItem;
-	publicListId: string;
+	mainListPublicId: string;
 	subLists: SubList[];
 	checkedSubListIds: string[];
 	refresh?: () => void;
@@ -37,7 +37,7 @@ type Props = {
 
 export default function RegisteredListItem({
 	movie,
-	publicListId,
+	mainListPublicId,
 	subLists,
 	checkedSubListIds,
 	refresh,
@@ -149,6 +149,7 @@ export default function RegisteredListItem({
 				isTogglePending={isTogglePending}
 				storeSuccess={displaySuccess}
 				errorMessage={displayErrorMessage}
+				mainListPublicId={mainListPublicId}
 			/>
 		);
 	}
@@ -179,7 +180,7 @@ export default function RegisteredListItem({
 			isSearchPending={isSearchExternalMovieDatabasePending}
 			isTogglePending={isTogglePending}
 			optimisticIsWatched={optimisticIsWatched}
-			publicListId={publicListId}
+			mainListPublicId={mainListPublicId}
 			subLists={subLists}
 			checkedSubListIds={checkedSubListIds}
 			handleToggleWatch={() => {

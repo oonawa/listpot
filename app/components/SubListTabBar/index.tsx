@@ -89,7 +89,7 @@ export default function SubListTabBar({
 			<SubListCreateModal
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
-				publicListId={mainListPublicId}
+				mainListPublicId={mainListPublicId}
 				isLoggedIn={isLoggedIn}
 			/>
 		</>

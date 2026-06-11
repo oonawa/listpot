@@ -197,6 +197,7 @@ export default function ListController({
 									movie={movie}
 									isLoggedIn={true}
 									publicListId={publicListId}
+									mainListPublicId={mainListPublicId}
 									subLists={subLists}
 									checkedSubListIds={checkedSubListIds}
 									sortKey={sortKey}
@@ -210,6 +211,7 @@ export default function ListController({
 								movie={movie}
 								isLoggedIn={false}
 								publicListId={publicListId}
+								mainListPublicId={mainListPublicId}
 								sortKey={sortKey}
 								index={index}
 							/>

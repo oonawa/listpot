@@ -43,7 +43,7 @@ type Props = {
 	searchDisabled: boolean;
 	removeDisabled: boolean;
 	listItemId: string;
-	publicListId: string;
+	mainListPublicId: string;
 } & (LoggedInProps | LocalProps);
 
 export default function SubMenu({
@@ -52,7 +52,7 @@ export default function SubMenu({
 	searchDisabled,
 	removeDisabled,
 	listItemId,
-	publicListId,
+	mainListPublicId,
 	isLoggedIn,
 	subLists,
 	checkedSubListIds,
@@ -87,7 +87,7 @@ export default function SubMenu({
 					isOpen={isDrawerOpen}
 					onClose={() => setIsDrawerOpen(false)}
 					listItemId={listItemId}
-					publicListId={publicListId}
+					mainListPublicId={mainListPublicId}
 					subLists={subLists}
 					checkedSubListIds={checkedSubListIds}
 				/>
@@ -96,7 +96,7 @@ export default function SubMenu({
 					isOpen={isDrawerOpen}
 					onClose={() => setIsDrawerOpen(false)}
 					listItemId={listItemId}
-					publicListId={publicListId}
+					mainListPublicId={mainListPublicId}
 					subLists={localSubLists}
 					checkedSubListIds={localCheckedSubListIds}
 				/>

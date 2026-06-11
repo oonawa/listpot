@@ -28,7 +28,7 @@ type Props = {
 	handleToggleWatch?: () => void;
 	isTogglePending?: boolean;
 	storeSuccess?: boolean;
-	publicListId?: string;
+	mainListPublicId?: string;
 	errorMessage?: string;
 };
 
@@ -44,7 +44,7 @@ export default function EditingListItem({
 	handleToggleWatch,
 	isTogglePending,
 	storeSuccess,
-	publicListId = "",
+	mainListPublicId = "",
 	errorMessage,
 }: Props) {
 	const auth = useAuth();
@@ -93,7 +93,7 @@ export default function EditingListItem({
 												searchDisabled={isSearchPending}
 												removeDisabled={isRemovePending}
 												listItemId={movie && "listItemId" in movie ? movie.listItemId : ""}
-												publicListId={publicListId}
+												mainListPublicId={mainListPublicId}
 												isLoggedIn={true}
 												subLists={[]}
 												checkedSubListIds={[]}
@@ -105,7 +105,7 @@ export default function EditingListItem({
 												searchDisabled={isSearchPending}
 												removeDisabled={isRemovePending}
 												listItemId={movie && "listItemId" in movie ? movie.listItemId : ""}
-												publicListId={publicListId}
+												mainListPublicId={mainListPublicId}
 												isLoggedIn={false}
 											/>
 										)

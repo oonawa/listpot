@@ -39,8 +39,7 @@ const meta = {
 		isRemovePending: false,
 		handleSearch: () => {},
 		handleRemove: () => {},
-		publicListId: "story-public-list-id",
-		
+		mainListPublicId: "story-main-list-public-id",
 	},
 	decorators: [
 		(Story) => (

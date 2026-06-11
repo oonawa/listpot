@@ -13,6 +13,7 @@ import {
 	parseLocalList,
 	getSubLists,
 	createSubList,
+	createSubListWithItem,
 	addSubListItem,
 	removeSubListItem,
 	renameSubList,
@@ -212,6 +213,55 @@ describe("createSubList", () => {
 		const store = setupStore();
 		const subListId = createSubList(store, "テスト", () => "fixed-sub-id");
 		expect(subListId).toBe("fixed-sub-id");
+	});
+});
+
+describe("createSubListWithItem", () => {
+	it("新規サブリストを作成し、初期アイテムが登録された状態になる", () => {
+		const store = setupStore();
+		const subListId = createSubListWithItem(store, "新規", "item-x");
+		const subLists = getSubLists(store);
+		expect(subLists).toHaveLength(1);
+		expect(subLists[0]).toMatchObject({
+			subListId,
+			name: "新規",
+			listItemIds: ["item-x"],
+		});
+	});
+
+	it("1 回の store.set で適用される（subLists が空のまま中間状態が観測されない）", () => {
+		const store = setupStore();
+		const observed: { length: number; itemIds: string[] }[] = [];
+		const unsubscribe = store.sub(risutopottoAtom, () => {
+			const subLists = store.get(risutopottoAtom).subLists;
+			observed.push({
+				length: subLists.length,
+				itemIds: subLists[0]?.listItemIds ?? [],
+			});
+		});
+
+		createSubListWithItem(store, "原子的", "item-y");
+
+		unsubscribe();
+		// 「サブリストを作成しただけで listItemIds が空」という中間状態を観測しないこと
+		const intermediate = observed.find(
+			(snapshot) => snapshot.length === 1 && snapshot.itemIds.length === 0,
+		);
+		expect(intermediate).toBeUndefined();
+		// 最終状態としては listItemIds に item-y が入っている
+		expect(observed.at(-1)).toEqual({ length: 1, itemIds: ["item-y"] });
+	});
+
+	it("generateId を注入した場合はその値が subListId になる", () => {
+		const store = setupStore();
+		const subListId = createSubListWithItem(
+			store,
+			"固定",
+			"item-z",
+			() => "fixed-sub-id",
+		);
+		expect(subListId).toBe("fixed-sub-id");
+		expect(getSubLists(store)[0]?.subListId).toBe("fixed-sub-id");
 	});
 });
 

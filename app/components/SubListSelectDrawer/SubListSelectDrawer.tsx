@@ -14,7 +14,7 @@ type Props = {
 	isOpen: boolean;
 	onClose: () => void;
 	listItemId: string;
-	publicListId: string;
+	mainListPublicId: string;
 	subLists: SubList[];
 	checkedSubListIds: string[];
 };
@@ -23,7 +23,7 @@ export default function SubListSelectDrawer({
 	isOpen,
 	onClose,
 	listItemId,
-	publicListId,
+	mainListPublicId,
 	subLists,
 	checkedSubListIds,
 }: Props) {
@@ -49,9 +49,9 @@ export default function SubListSelectDrawer({
 			checkedIds={checkedIds}
 			isPending={isPending}
 			onToggle={handleToggle}
-			onCreateClick={() => {}}
-			publicListId={publicListId}
+			mainListPublicId={mainListPublicId}
 			isLoggedIn={true}
+			listItemId={listItemId}
 		/>
 	);
 }
