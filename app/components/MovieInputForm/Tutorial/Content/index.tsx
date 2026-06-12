@@ -118,6 +118,7 @@ export default function TutorialContent() {
 	const handleServiceSelect = (serviceName: ServiceName) => {
 		setSelectedServiceName(serviceName);
 		setActiveStep(0);
+		setIsAccordionOpen(true);
 	};
 
 	useEffect(() => {
@@ -140,8 +141,15 @@ export default function TutorialContent() {
 	}, [activeStep, selectedService]);
 
 	return (
-		<div className="pb-2 text-foreground-dark-2">
-			<div className="grid grid-cols-2 lg:flex gap-2 lg:justify-between ">
+		<div className="pt-2 pb-6 text-foreground-dark-1">
+			<div className="pb-8">
+				<p className="text-sm">
+					作品の<span className="font-bold">「共有リンク」</span>
+					をアプリから取得し、そのままペーストしてください。
+				</p>
+			</div>
+			<h3 className="font-bold text-sm text-center">配信アプリを選択</h3>
+			<div className="pt-3 grid grid-cols-2 lg:flex gap-2 lg:justify-between ">
 				{serviceData.map((service) => (
 					<Button
 						key={service.serviceName}
@@ -157,70 +165,52 @@ export default function TutorialContent() {
 				))}
 			</div>
 
-			{selectedService && (
-				<div className="pt-4">
-					<div className="flex flex-col items-center">
-						<h3 className="text-foreground-dark-3 font-bold py-2">手順</h3>
-						<div className="w-full md:max-w-[90%] border border-background-light-1 p-2 md:p-4 rounded-md">
-							<div className="grid grid-cols-7 place-content-center place-items-center gap-2 md:gap-4">
-								{selectedService.steps.map((step, index) => {
-									const isDim = activeStep === null || index !== activeStep;
-
-									return (
-										<Fragment key={`${step.mark}-${step.description}`}>
-											{step.mark === "share" ? (
-												<ShareMark
-													dimmed={isDim}
-													serviceName={selectedService.serviceName}
-												/>
-											) : (
-												<MenuMark dimmed={isDim} type={step.menuType} />
-											)}
-											<TapIcon
-												className={`size-10 ${activeStep === index ? "animate-tap-shake" : ""} ${isDim ? "opacity-30" : "opacity-100"}`}
-											/>
-											<Description dimmed={isDim}>
-												{step.description}
-											</Description>
-										</Fragment>
-									);
-								})}
+			<div className={`w-full py-4 grid transition-[grid-template-rows] duration-500 ${isAccordionOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+				{selectedService && (
+					<div className="overflow-hidden">
+						<div className="py-4">
+							<h3 className="text-sm font-bold text-center">共有リンクの例</h3>
+							<div className="w-full px-2 py-4 md:p-4 rounded-lg bg-background-light-1 mt-2">
+								<blockquote className="text-sm md:text-base break-all border-l-2 border-background-light-2 pl-2 md:pl-4 text-foreground-dark-3">
+									{selectedService.shareLinkExample}
+								</blockquote>
 							</div>
 						</div>
-					</div>
-					<div className="pt-4 flex justify-center">
-						<div className="w-full md:max-w-[90%]">
-							<button
-								type="button"
-								onClick={() => setIsAccordionOpen((prev) => !prev)}
-								className="w-full text-sm font-bold flex items-center gap-2 py-2"
-							>
-								<span>共有リンクの例</span>
-								<span
-									className="transition-transform duration-200"
-									style={{
-										transform: isAccordionOpen
-											? "rotate(90deg)"
-											: "rotate(0deg)",
-									}}
-								>
-									▶︎
-								</span>
-							</button>
-							<div
-								className="overflow-hidden transition-all duration-300"
-								style={{ maxHeight: isAccordionOpen ? "300px" : "0px" }}
-							>
-								<div className="w-full px-2 py-4 md:p-4 rounded-lg bg-background-light-1 mt-2">
-									<blockquote className="text-sm md:text-base break-all line-clamp-3 border-l-2 border-background-light-2 pl-2 md:pl-4 text-foreground-dark-3">
-										{selectedService.shareLinkExample}
-									</blockquote>
+
+						<div className="pt-4 flex flex-col items-center">
+							<h3 className="text-sm font-bold">コピーする手順</h3>
+							<div className="w-full pt-3">
+								<div className="border border-background-light-1 p-2 md:p-4 rounded-md">
+									<div className="grid grid-cols-7 place-content-center place-items-center gap-2 md:gap-4">
+										{selectedService.steps.map((step, index) => {
+											const isDim = activeStep === null || index !== activeStep;
+
+											return (
+												<Fragment key={`${step.mark}-${step.description}`}>
+													{step.mark === "share" ? (
+														<ShareMark
+															dimmed={isDim}
+															serviceName={selectedService.serviceName}
+														/>
+													) : (
+														<MenuMark dimmed={isDim} type={step.menuType} />
+													)}
+													<TapIcon
+														className={`size-10 ${activeStep === index ? "animate-tap-shake" : ""} ${isDim ? "opacity-30" : "opacity-100"}`}
+													/>
+													<Description dimmed={isDim}>
+														{step.description}
+													</Description>
+												</Fragment>
+											);
+										})}
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 }
