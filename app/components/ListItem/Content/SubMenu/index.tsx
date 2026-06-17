@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import MoreIcon from "@/components/ui/Icons/MoreIcon";
 import SubListSelectDrawer from "@/app/components/SubListSelectDrawer/SubListSelectDrawer";
 import LocalSubListSelectDrawer from "@/app/components/SubListSelectDrawer/LocalSubListSelectDrawer";
-import { risutopottoAtom } from "@/features/shared/store";
+import { listpotAtom } from "@/features/shared/store";
 
 type SubList = {
 	publicId: string;
@@ -61,7 +61,7 @@ export default function SubMenu({
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-	const store = useAtomValue(risutopottoAtom);
+	const store = useAtomValue(listpotAtom);
 
 	const localSubLists = useMemo(
 		() =>

@@ -136,7 +136,7 @@ describe("sendLoginCode", () => {
 		expect(mockSendEmail).toHaveBeenCalledWith(
 			expect.objectContaining({
 				to: existingUserEmail,
-				subject: "【りすとぽっと】ログインコードをお送りします",
+				subject: "【LISTPOT】ログインコードをお送りします",
 				from: "りすとぽっと <hi@risutopo.com>",
 				react: `loginCode:${templateArg.loginCode} url:https://localhost:3000`,
 			}),
@@ -188,7 +188,7 @@ describe("sendLoginCode", () => {
 		expect(mockSendEmail).toHaveBeenCalledWith(
 			expect.objectContaining({
 				to: unregisteredUserEmail,
-				subject: "【りすとぽっと】ログインコードをお送りします",
+				subject: "【LISTPOT】ログインコードをお送りします",
 				from: "りすとぽっと <hi@risutopo.com>",
 				react: `loginCode:${templateArg.loginCode} url:https://localhost:3000`,
 			}),

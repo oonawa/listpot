@@ -8,7 +8,7 @@ import List from "./components/List";
 export const metadata: Metadata = {
 	title: "マイリスト",
 	openGraph: {
-		title: "マイリスト｜りすとぽっと",
+		title: "マイリスト｜LISTPOT",
 	},
 };
 

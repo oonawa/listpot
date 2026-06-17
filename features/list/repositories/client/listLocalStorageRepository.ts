@@ -1,17 +1,17 @@
 import type { createStore } from "jotai";
 
 import type { ListItem } from "@/features/list/types/ListItem";
-import { risutopottoAtom } from "@/features/shared/store";
+import { listpotAtom } from "@/features/shared/store";
 import { localListSchema } from "@/features/user/schemas/localListSchema";
 
 type Store = ReturnType<typeof createStore>;
 
 export function getListItems(store: Store): ListItem[] {
-	return store.get(risutopottoAtom).list.items;
+	return store.get(listpotAtom).list.items;
 }
 
 export function getListId(store: Store): string {
-	return store.get(risutopottoAtom).list.listId;
+	return store.get(listpotAtom).list.listId;
 }
 
 export function replaceListItems(
@@ -19,8 +19,8 @@ export function replaceListItems(
 	listItems: ListItem[],
 	listId?: string,
 ): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		list: {
 			listId: listId ?? current.list.listId,
@@ -30,7 +30,7 @@ export function replaceListItems(
 }
 
 export function storeListItem(store: Store, newItem: ListItem): ListItem {
-	const current = store.get(risutopottoAtom);
+	const current = store.get(listpotAtom);
 	const { items, listId } = current.list;
 
 	const existingItemIndex = items.findIndex(
@@ -43,7 +43,7 @@ export function storeListItem(store: Store, newItem: ListItem): ListItem {
 					index === existingItemIndex ? newItem : item,
 				);
 
-	store.set(risutopottoAtom, {
+	store.set(listpotAtom, {
 		...current,
 		list: {
 			listId,
@@ -55,9 +55,9 @@ export function storeListItem(store: Store, newItem: ListItem): ListItem {
 }
 
 export function removeListItem(store: Store, listItemId: string): void {
-	const current = store.get(risutopottoAtom);
+	const current = store.get(listpotAtom);
 	const { items, listId } = current.list;
-	store.set(risutopottoAtom, {
+	store.set(listpotAtom, {
 		...current,
 		list: {
 			listId,
@@ -70,8 +70,8 @@ export function initializeEmptyList(
 	store: Store,
 	generateId: () => string = () => crypto.randomUUID(),
 ): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		list: {
 			listId: generateId(),
@@ -81,8 +81,8 @@ export function initializeEmptyList(
 }
 
 export function clearLocalList(store: Store): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		list: {
 			listId: current.list.listId,
@@ -96,7 +96,7 @@ export function parseLocalList(store: Store): {
 	items: ListItem[];
 	subLists: { subListId: string; name: string; listItemIds: string[] }[];
 } {
-	const current = store.get(risutopottoAtom);
+	const current = store.get(listpotAtom);
 	const parsed = localListSchema.safeParse({
 		...current.list,
 		subLists: current.subLists,
@@ -108,7 +108,7 @@ export function parseLocalList(store: Store): {
 export function getSubLists(
 	store: Store,
 ): { subListId: string; name: string; listItemIds: string[] }[] {
-	return store.get(risutopottoAtom).subLists;
+	return store.get(listpotAtom).subLists;
 }
 
 export function createSubList(
@@ -116,9 +116,9 @@ export function createSubList(
 	name: string,
 	generateId: () => string = () => crypto.randomUUID(),
 ): string {
-	const current = store.get(risutopottoAtom);
+	const current = store.get(listpotAtom);
 	const subListId = generateId();
-	store.set(risutopottoAtom, {
+	store.set(listpotAtom, {
 		...current,
 		subLists: [...current.subLists, { subListId, name, listItemIds: [] }],
 	});
@@ -131,9 +131,9 @@ export function createSubListWithItem(
 	listItemId: string,
 	generateId: () => string = () => crypto.randomUUID(),
 ): string {
-	const current = store.get(risutopottoAtom);
+	const current = store.get(listpotAtom);
 	const subListId = generateId();
-	store.set(risutopottoAtom, {
+	store.set(listpotAtom, {
 		...current,
 		subLists: [
 			...current.subLists,
@@ -148,8 +148,8 @@ export function addSubListItem(
 	subListId: string,
 	listItemId: string,
 ): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		subLists: current.subLists.map((sl) =>
 			sl.subListId === subListId
@@ -164,8 +164,8 @@ export function removeSubListItem(
 	subListId: string,
 	listItemId: string,
 ): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		subLists: current.subLists.map((sl) =>
 			sl.subListId === subListId
@@ -183,8 +183,8 @@ export function renameSubList(
 	subListId: string,
 	name: string,
 ): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		subLists: current.subLists.map((sl) =>
 			sl.subListId === subListId ? { ...sl, name } : sl,
@@ -193,14 +193,14 @@ export function renameSubList(
 }
 
 export function deleteSubList(store: Store, subListId: string): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, {
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, {
 		...current,
 		subLists: current.subLists.filter((sl) => sl.subListId !== subListId),
 	});
 }
 
 export function clearSubLists(store: Store): void {
-	const current = store.get(risutopottoAtom);
-	store.set(risutopottoAtom, { ...current, subLists: [] });
+	const current = store.get(listpotAtom);
+	store.set(listpotAtom, { ...current, subLists: [] });
 }

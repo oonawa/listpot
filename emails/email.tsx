@@ -27,7 +27,7 @@ export default function LoginMailTemplate({ loginCode, url }: Props) {
 						<Container className="w-full">
 							<Img
 								src={`${origin}/logo-email.png`}
-								alt="りすとぽっと"
+								alt="LISTPOT"
                                 height="152"
 								className="w-full"
 							/>

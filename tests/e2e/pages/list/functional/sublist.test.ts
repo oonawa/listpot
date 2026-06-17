@@ -239,7 +239,7 @@ test.describe("Issue #284 - サブリスト新規作成時にアイテム自動�
 
 		// localStorage 検証: 作成されたサブリストの listItemIds に該当 ID が含まれる
 		const stored = await page.evaluate(() => {
-			return localStorage.getItem("risutopotto");
+			return localStorage.getItem("listpot");
 		});
 		const parsed = stored ? JSON.parse(stored) : null;
 		expect(parsed?.subLists).toHaveLength(1);
@@ -292,7 +292,7 @@ test.describe("Issue #284 - サブリスト新規作成時にアイテム自動�
 		await expect(page.getByText("サブリスト経由映画").first()).toBeVisible();
 
 		const stored = await page.evaluate(() => {
-			return localStorage.getItem("risutopotto");
+			return localStorage.getItem("listpot");
 		});
 		const parsed = stored ? JSON.parse(stored) : null;
 		const created = parsed?.subLists?.find(
@@ -558,7 +558,7 @@ test.describe("Issue #284 - サブリスト新規作成時にアイテム自動�
 
 		// 遷移後、新しいサブリストは空（既存アイテムは含まれない）
 		const stored = await page.evaluate(() => {
-			return localStorage.getItem("risutopotto");
+			return localStorage.getItem("listpot");
 		});
 		const parsed = stored ? JSON.parse(stored) : null;
 		const created = parsed?.subLists?.find(

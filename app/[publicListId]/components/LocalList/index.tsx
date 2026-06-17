@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { risutopottoAtom } from "@/features/shared/store";
+import { listpotAtom } from "@/features/shared/store";
 import { useIsHydrated } from "@/features/shared/hooks/useIsHydrated";
 import SubListTabBar from "@/app/components/SubListTabBar";
 import ListController from "@/app/[publicListId]/components/ListController";
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function LocalList({ publicListId }: Props) {
-	const store = useAtomValue(risutopottoAtom);
+	const store = useAtomValue(listpotAtom);
 
 	const isHydrated = useIsHydrated();
 

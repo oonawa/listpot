@@ -6,7 +6,7 @@ import VerifyForm from "../../components/VerifyForm";
 export const metadata: Metadata = {
 	title: "本人確認",
 	openGraph: {
-		title: "本人確認｜りすとぽっと",
+		title: "本人確認｜LISTPOT",
 	},
 };
 

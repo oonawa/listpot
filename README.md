@@ -1,7 +1,7 @@
 <p align="center">
     <img height="250" width="250" src="public/logo.png">
 </p>
-<h1 align="center">りすとぽっと</h1>
+<h1 align="center">LISTPOT</h1>
 <p align="center">観たい映画のリストを作成・管理するためのWebアプリケーション</p>
 
 配信サービスからタイトルと視聴URLを入力することで、一元化されたリストを作成します。
@@ -50,7 +50,7 @@ Next.js / Turso / Vercel のフルスタックな構成になっています。
 
 ### リポジトリをクローン
 
-1. リポジトリをクローン（`git clone https://github.com/oonawa/risutopo.git`）
+1. リポジトリをクローン（`git clone https://github.com/oonawa/listpot.git`）
 2. 依存関係をインストール（`npm install`）
 3. ルートへ`local.db`を作成
 4. 環境変数をセット

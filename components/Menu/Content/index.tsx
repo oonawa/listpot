@@ -2,7 +2,7 @@
 
 import { useAtomValue } from "jotai";
 import { usePathname } from "next/navigation";
-import { risutopottoAtom } from "@/features/shared/store";
+import { listpotAtom } from "@/features/shared/store";
 import { useIsHydrated } from "@/features/shared/hooks/useIsHydrated";
 import HomeIcon from "../../ui/Icons/HomeIcon";
 import ListIcon from "../../ui/Icons/ListIcon";
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function MenuContent({ publicListId }: Props) {
-	const store = useAtomValue(risutopottoAtom);
+	const store = useAtomValue(listpotAtom);
 	const pathname = usePathname();
 	const isHydrated = useIsHydrated();
 

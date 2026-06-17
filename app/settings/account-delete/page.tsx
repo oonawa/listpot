@@ -7,7 +7,7 @@ import AccountDeleteForm from "./components/AccountDeleteForm";
 export const metadata: Metadata = {
 	title: "アカウント削除",
 	openGraph: {
-		title: "アカウント削除｜りすとぽっと",
+		title: "アカウント削除｜LISTPOT",
 	},
 };
 
