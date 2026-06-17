@@ -8,7 +8,7 @@ import SectionContent from "../components/Section/Content";
 export const metadata: Metadata = {
 	title: "利用規約",
 	openGraph: {
-		title: "利用規約｜りすとぽっと",
+		title: "利用規約｜LISTPOT",
 	},
 };
 

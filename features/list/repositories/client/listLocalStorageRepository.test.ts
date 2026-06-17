@@ -1,6 +1,6 @@
 import { createStore } from "jotai";
 import { describe, expect, it } from "vitest";
-import { risutopottoAtom } from "@/features/shared/store";
+import { listpotAtom } from "@/features/shared/store";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
 	getListItems,
@@ -25,7 +25,7 @@ const TEST_LIST_ID = "12345678-1234-4234-b234-123456789012";
 
 function setupStore() {
 	const store = createStore();
-	store.set(risutopottoAtom, {
+	store.set(listpotAtom, {
 		list: { listId: TEST_LIST_ID, items: [] },
 		subLists: [],
 	});
@@ -55,8 +55,8 @@ describe("getListItems", () => {
 	it("アイテムが存在する場合はそれを返す", () => {
 		const store = setupStore();
 		const item = makeItem();
-		const current = store.get(risutopottoAtom);
-		store.set(risutopottoAtom, {
+		const current = store.get(listpotAtom);
+		store.set(listpotAtom, {
 			...current,
 			list: { ...current.list, items: [item] },
 		});
@@ -232,8 +232,8 @@ describe("createSubListWithItem", () => {
 	it("1 回の store.set で適用される（subLists が空のまま中間状態が観測されない）", () => {
 		const store = setupStore();
 		const observed: { length: number; itemIds: string[] }[] = [];
-		const unsubscribe = store.sub(risutopottoAtom, () => {
-			const subLists = store.get(risutopottoAtom).subLists;
+		const unsubscribe = store.sub(listpotAtom, () => {
+			const subLists = store.get(listpotAtom).subLists;
 			observed.push({
 				length: subLists.length,
 				itemIds: subLists[0]?.listItemIds ?? [],
@@ -334,7 +334,7 @@ describe("clearSubLists", () => {
 		const store = setupStore();
 		createSubList(store, "リスト1");
 		clearSubLists(store);
-		expect(store.get(risutopottoAtom).list).toEqual({
+		expect(store.get(listpotAtom).list).toEqual({
 			listId: TEST_LIST_ID,
 			items: [],
 		});

@@ -7,7 +7,7 @@ import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 import { db } from "../../../lib/testDb";
 
-const LOCAL_STORAGE_KEY = "risutopotto";
+const LOCAL_STORAGE_KEY = "listpot";
 
 test.describe("SubListMoreMenu - サブリストMoreMenuテスト", () => {
 	test.beforeEach(async () => {

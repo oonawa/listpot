@@ -2,9 +2,9 @@ import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import type { ListItem } from "@/features/list/types/ListItem";
 
-export const LOCAL_STORAGE_KEY = "risutopotto";
+export const LOCAL_STORAGE_KEY = "listpot";
 
-export type RisutopottoStorage = {
+export type ListpotStorage = {
 	list: {
 		listId: string;
 		items: ListItem[];
@@ -22,12 +22,12 @@ const isoDateReviver = (_key: string, value: unknown): unknown => {
 	return value;
 };
 
-const storage = createJSONStorage<RisutopottoStorage>(
+const storage = createJSONStorage<ListpotStorage>(
 	() => globalThis.localStorage,
 	{ reviver: isoDateReviver },
 );
 
-export const risutopottoAtom = atomWithStorage<RisutopottoStorage>(
+export const listpotAtom = atomWithStorage<ListpotStorage>(
 	LOCAL_STORAGE_KEY,
 	{ list: { listId: "", items: [] }, subLists: [] },
 	storage,
@@ -37,11 +37,11 @@ export const risutopottoAtom = atomWithStorage<RisutopottoStorage>(
 );
 
 export const localListAtom = atom(null, (get, set, payload: ListItem) => {
-	const current = get(risutopottoAtom);
+	const current = get(listpotAtom);
 	const existing = current.list.items;
 
 	const next = [...existing, payload];
-	set(risutopottoAtom, {
+	set(listpotAtom, {
 		...current,
 		list: {
 			listId: current.list.listId,

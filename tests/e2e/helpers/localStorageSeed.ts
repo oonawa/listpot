@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-const LOCAL_STORAGE_KEY = "risutopotto";
+const LOCAL_STORAGE_KEY = "listpot";
 
 /**
  * page.goto() より前に呼び出す。

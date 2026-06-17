@@ -6,7 +6,7 @@ import LoginForm from "./components/Form";
 export const metadata: Metadata = {
 	title: "ログイン",
 	openGraph: {
-		title: "ログイン｜りすとぽっと",
+		title: "ログイン｜LISTPOT",
 	},
 };
 

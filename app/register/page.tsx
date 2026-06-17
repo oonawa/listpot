@@ -7,7 +7,7 @@ import { verifyTempSessionTokenService } from "@/features/auth/services/verifyTe
 export const metadata: Metadata = {
 	title: "アカウント登録",
 	openGraph: {
-		title: "アカウント登録｜りすとぽっと",
+		title: "アカウント登録｜LISTPOT",
 	},
 };
 

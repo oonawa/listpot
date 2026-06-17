@@ -6,9 +6,9 @@ import SectionTitle from "../components/Section/Title";
 import SectionContent from "../components/Section/Content";
 
 export const metadata: Metadata = {
-	title: { absolute: "りすとぽっとについて" },
+	title: { absolute: "LISTPOTについて" },
 	openGraph: {
-		title: "りすとぽっとについて",
+		title: "LISTPOTについて",
 	},
 };
 

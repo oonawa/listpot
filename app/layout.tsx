@@ -14,13 +14,13 @@ export const metadata: Metadata = {
 			: "http://localhost:3000",
 	),
 	title: {
-		default: "りすとぽっと｜映画ファンのためのウォッチリスト整理ツール",
-		template: "%s｜りすとぽっと",
+		default: "LISTPOT｜映画ファンのためのウォッチリスト整理ツール",
+		template: "%s｜LISTPOT",
 	},
 	description:
 		"観たい配信映画をまとめて管理。サービスをまたいで自由にリストを作ったり、選び疲れたらルーレットでランダム抽選できます。",
 	openGraph: {
-		title: "りすとぽっと｜映画ファンのためのウォッチリスト整理ツール",
+		title: "LISTPOT｜映画ファンのためのウォッチリスト整理ツール",
 		description:
 			"観たい配信映画をまとめて管理。サービスをまたいで自由にリストを作ったり、選び疲れたらルーレットでランダム抽選できます。",
 		images: "/og.png",
@@ -44,7 +44,7 @@ export default async function RootLayout({
 	return (
 		<html lang="ja">
 			<head>
-				<meta name="apple-mobile-web-app-title" content="りすとぽっと" />
+				<meta name="apple-mobile-web-app-title" content="LISTPOT" />
 			</head>
 			<body className={`antialiased`}>
 				{!publicListId && <LocalListInitializer />}

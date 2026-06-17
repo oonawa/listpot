@@ -18,7 +18,7 @@ export async function sendLoginMail({
 				? "onboarding@resend.dev"
 				: "りすとぽっと <hi@risutopo.com>",
 		to: email,
-		subject: "【りすとぽっと】ログインコードをお送りします",
+		subject: "【LISTPOT】ログインコードをお送りします",
 		react: LoginMailTemplate({ loginCode, url }),
 	});
 }

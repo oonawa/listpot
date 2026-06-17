@@ -22,7 +22,7 @@ export default function HomeTutorial({ ItemRegisterForm, Roulette }: Props) {
 					<div className="rounded-2xl text-foreground-dark-1 pt-4 text-lg">
 						<p>配信サービス、たまったウォッチリスト。</p>
 						<p>
-							<span className="font-bold pr-1">りすとぽっと</span>
+							<span className="font-bold pr-1">LISTPOT</span>
 							で整理しましょう🐿️
 						</p>
 					</div>

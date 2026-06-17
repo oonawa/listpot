@@ -5,7 +5,7 @@ export default function Footer() {
 				<div className="flex flex-col md:flex-row md:justify-between gap-8 pb-10">
 					<div className="flex flex-col gap-2">
 						<a href="/">
-							<span className="text-xl font-bold">りすとぽっと</span>
+							<span className="text-3xl sm:text-4xl font-bold font-title tracking-wider">LISTPOT</span>
 						</a>
 						<p className="text-sm text-foreground-dark-2">
 							観たいものがありすぎる人のウォッチリスト整理ツール

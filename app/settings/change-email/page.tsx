@@ -8,7 +8,7 @@ import ChangeEmailForm from "./components/ChangeEmailForm";
 export const metadata: Metadata = {
 	title: "メールアドレス変更",
 	openGraph: {
-		title: "メールアドレス変更｜りすとぽっと",
+		title: "メールアドレス変更｜LISTPOT",
 	},
 };
 
