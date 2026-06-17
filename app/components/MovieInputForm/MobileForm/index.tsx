@@ -61,7 +61,7 @@ export default function MobileForm({ disabled, handleExtract }: Props) {
 				{errors.value && <p>{errors.value.message}</p>}
 			</div>
 
-			<Tutorial title="共有リンクの取得方法">
+			<Tutorial>
 				<TutorialContent />
 			</Tutorial>
 		</div>
