@@ -16,7 +16,7 @@ export async function sendLoginMail({
 		from:
 			process.env.NODE_ENV === "development"
 				? "onboarding@resend.dev"
-				: "りすとぽっと <hi@risutopo.com>",
+				: "LISTPOT <hi@listpot.fun>",
 		to: email,
 		subject: "【LISTPOT】ログインコードをお送りします",
 		react: LoginMailTemplate({ loginCode, url }),
