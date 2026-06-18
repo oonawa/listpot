@@ -13,11 +13,13 @@ export async function issueReauthTokenService({
 	loginCode,
 	userId,
 	ipAddress,
+	target,
 	now,
 }: {
 	loginCode: string;
 	userId: number;
 	ipAddress: string;
+	target: string;
 	now: Date;
 }): Promise<Result<{ token: string; expiresAt: Date }>> {
 	try {
@@ -36,6 +38,7 @@ export async function issueReauthTokenService({
 					await insertAttempt({
 						tx,
 						ipAddress,
+						target,
 						attemptType: "code_verify",
 						success: false,
 					});
@@ -55,6 +58,7 @@ export async function issueReauthTokenService({
 					await insertAttempt({
 						tx,
 						ipAddress,
+						target,
 						attemptType: "code_verify",
 						success: false,
 					});
@@ -71,6 +75,7 @@ export async function issueReauthTokenService({
 				await insertAttempt({
 					tx,
 					ipAddress,
+					target,
 					attemptType: "code_verify",
 					success: true,
 				});

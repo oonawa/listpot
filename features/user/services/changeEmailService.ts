@@ -17,6 +17,7 @@ export async function changeEmailService({
 	userId,
 	reauthToken,
 	ipAddress,
+	target,
 	now,
 }: {
 	newEmail: string;
@@ -24,6 +25,7 @@ export async function changeEmailService({
 	userId: number;
 	reauthToken: string;
 	ipAddress: string;
+	target: string;
 	now: Date;
 }): Promise<Result> {
 	try {
@@ -50,6 +52,7 @@ export async function changeEmailService({
 				await insertAttempt({
 					tx,
 					ipAddress,
+					target,
 					attemptType: "code_verify",
 					success: false,
 				});
@@ -65,6 +68,7 @@ export async function changeEmailService({
 			await insertAttempt({
 				tx,
 				ipAddress,
+				target,
 				attemptType: "code_verify",
 				success: true,
 			});

@@ -3,6 +3,7 @@
 import { headers, cookies } from "next/headers";
 import crypto from "node:crypto";
 import type { Result } from "@/features/shared/types/Result";
+import { getClientIp } from "@/features/shared/lib/getClientIp";
 import { loginCodeSchema } from "../schemas/loginSchemas";
 import { checkRateLimitService } from "../services/checkRateLimitService";
 import { loginService } from "../services/loginService";
@@ -29,12 +30,15 @@ export async function login(
 	}
 
 	const headersList = await headers();
+	const ipAddress = getClientIp(headersList);
+	// login は loginCode のみを受け取り email が事前にわからないため
+	// target を ipAddress と同値にして IP 軸のみで保護する。
+	// IP 抽出は getClientIp が信頼ヘッダから取るため偽装は不可。
+	const target = ipAddress;
 
-	const { limit, ipAddress } = await checkRateLimitService({
-		ipAddress:
-			headersList.get("x-forwarded-for")?.split(",")[0] ||
-			headersList.get("x-real-ip") ||
-			"unknown",
+	const { limit } = await checkRateLimitService({
+		ipAddress,
+		target,
 		attemptType: "code_verify",
 		now,
 	});
@@ -63,6 +67,7 @@ export async function login(
 		loginCode: parsed.data.value,
 		deviceId,
 		ipAddress,
+		target,
 		now,
 	});
 

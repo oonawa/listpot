@@ -19,14 +19,16 @@ const {
 	mockLoginMailTemplate,
 	mockResendConstructor,
 } = vi.hoisted(() => {
-	const headers = vi.fn(async () => ({
-		get: (name: string) => {
-			if (name === "x-forwarded-for") {
-				return "127.0.0.1";
-			}
-			return null;
-		},
-	}));
+	const headers = vi.fn(
+		async (): Promise<{ get: (name: string) => string | null }> => ({
+			get: (name: string): string | null => {
+				if (name === "x-vercel-forwarded-for") {
+					return "127.0.0.1";
+				}
+				return null;
+			},
+		}),
+	);
 	const sendEmail = vi.fn(async () => ({
 		data: { id: "mock-email-id" },
 		error: null,
@@ -221,6 +223,89 @@ describe("sendLoginCode", () => {
 
 		expect(attempt.attemptType).toBe("code_send");
 		expect(attempt.success).toBe(true);
+	});
+
+	// Issue #312 MEDIUM: x-forwarded-for 偽装によるレート制限回避が塞がれていることの確認。
+	// Vercel エッジが付与する信頼ヘッダ (x-vercel-forwarded-for) のみを参照するため、
+	// 攻撃者が x-forwarded-for を毎回書き換えても IP 軸の集計は変わらず上限で拒否されるべき。
+	it("【x-forwarded-for 偽装耐性】信頼ヘッダ同一なら x-forwarded-for を毎回変えても上限で拒否される", async () => {
+		const targetEmail = "rate-limit-xff-spoof@example.com";
+
+		function mockOnceWithSpoofedXff(spoofed: string) {
+			mockHeaders.mockImplementationOnce(
+				async (): Promise<{ get: (name: string) => string | null }> => ({
+					get: (name: string): string | null => {
+						if (name === "x-vercel-forwarded-for") return "198.51.100.1";
+						if (name === "x-forwarded-for") return spoofed;
+						return null;
+					},
+				}),
+			);
+		}
+
+		for (let i = 0; i < 5; i++) {
+			mockOnceWithSpoofedXff(`203.0.113.${i + 1}`);
+			const result = await sendLoginCode(targetEmail);
+			expect(result).toEqual({ success: true });
+		}
+
+		mockOnceWithSpoofedXff("203.0.113.99");
+		const result = await sendLoginCode(targetEmail);
+
+		expect(result.success).toBe(false);
+		if (result.success) {
+			throw new Error("x-forwarded-for 偽装でレート制限が回避された");
+		}
+		expect(result.error.code).toBe("TOO_MANY_REQUESTS_ERROR");
+	});
+
+	// Issue #312 MEDIUM: 信頼ヘッダ自体が変わるケース（攻撃者がボットネット等で実 IP を多数持つ場合）の防御確認。
+	// target (メール) 軸の集計があるため、IP がバラバラでも同一メール宛は上限で拒否されるべき。
+	it("【IP 回転耐性】信頼ヘッダ上で異なる IP からでも同一メール宛は上限で拒否される", async () => {
+		const targetEmail = "rate-limit-target-axis@example.com";
+
+		function mockOnceWithRealIp(ip: string) {
+			mockHeaders.mockImplementationOnce(
+				async (): Promise<{ get: (name: string) => string | null }> => ({
+					get: (name: string): string | null => {
+						if (name === "x-vercel-forwarded-for") return ip;
+						return null;
+					},
+				}),
+			);
+		}
+
+		for (let i = 0; i < 5; i++) {
+			mockOnceWithRealIp(`198.51.100.${i + 1}`);
+			const result = await sendLoginCode(targetEmail);
+			expect(result).toEqual({ success: true });
+		}
+
+		mockOnceWithRealIp("198.51.100.99");
+		const result = await sendLoginCode(targetEmail);
+
+		expect(result.success).toBe(false);
+		if (result.success) {
+			throw new Error("target 軸のレート制限が機能していない");
+		}
+		expect(result.error.code).toBe("TOO_MANY_REQUESTS_ERROR");
+	});
+
+	// IP 軸保全の確認: 攻撃者が同一 IP から多数のメールを試行するケース。
+	it("【IP 軸保全】同一 IP から異なるメール宛に 5 回送ったあと 6 回目は別メール宛でも拒否される", async () => {
+		// default mockHeaders は x-vercel-forwarded-for=127.0.0.1 を返すため同一 IP として扱われる
+		for (let i = 0; i < 5; i++) {
+			const result = await sendLoginCode(`ip-axis-${i}@example.com`);
+			expect(result).toEqual({ success: true });
+		}
+
+		const result = await sendLoginCode("ip-axis-final@example.com");
+
+		expect(result.success).toBe(false);
+		if (result.success) {
+			throw new Error("IP 軸のレート制限が機能していない");
+		}
+		expect(result.error.code).toBe("TOO_MANY_REQUESTS_ERROR");
 	});
 
 	it("DBには同一メールアドレスの認証コードが常に最新の一件のみ登録される", async () => {

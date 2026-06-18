@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/db/client";
 import {
 	listItemsTable,
@@ -11,6 +11,14 @@ import {
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { addSubListItem } from "./addSubListItem";
+
+const { mockCurrentUserId } = vi.hoisted(() => ({
+	mockCurrentUserId: vi.fn(),
+}));
+
+vi.mock("@/features/shared/actions/currentUserId", () => ({
+	currentUserId: mockCurrentUserId,
+}));
 
 async function findStreamingServiceIdBySlug(slug: "netflix") {
 	const [row] = await db
@@ -25,6 +33,7 @@ describe("addSubListItem", () => {
 	let subListPublicId = "";
 	let listItemPublicId = "";
 	let subListId = 0;
+	let ownerUserId = 0;
 
 	beforeEach(async () => {
 		await db.delete(listItemsTable);
@@ -35,6 +44,8 @@ describe("addSubListItem", () => {
 			.insert(usersTable)
 			.values({ publicId: "add-sub-list-item-user" })
 			.returning({ id: usersTable.id });
+
+		ownerUserId = user.id;
 
 		const [list] = await db
 			.insert(listsTable)
@@ -71,6 +82,11 @@ describe("addSubListItem", () => {
 
 		// listItem.id を参照するが使用しない（型のため）
 		void listItem;
+
+		mockCurrentUserId.mockResolvedValue({
+			success: true,
+			data: { userId: ownerUserId },
+		});
 	});
 
 	it("アイテムをサブリストへ追加できる", async () => {
@@ -115,6 +131,65 @@ describe("addSubListItem", () => {
 				code: "NOT_FOUND_ERROR",
 				message: "サブリストが見つかりませんでした。",
 			},
+		});
+	});
+
+	describe("所有権チェック（IDOR対策）", () => {
+		it("未認証ユーザーはサブリストへ追加できずUNAUTHORIZED_ERRORを返す", async () => {
+			mockCurrentUserId.mockResolvedValue({
+				success: false,
+				error: { code: "UNAUTHORIZED_ERROR", message: "ログインしていません。" },
+			});
+
+			const result = await addSubListItem({
+				subListPublicId,
+				listItemPublicId,
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("UNAUTHORIZED_ERROR");
+
+			const items = await db
+				.select()
+				.from(subListItemsTable)
+				.where(eq(subListItemsTable.subListId, subListId));
+			expect(items).toHaveLength(0);
+		});
+
+		it("他人のサブリストへは追加できずFORBIDDEN_ERRORを返す", async () => {
+			const [attacker] = await db
+				.insert(usersTable)
+				.values({ publicId: "add-sub-list-item-attacker-user" })
+				.returning({ id: usersTable.id });
+			await db.insert(listsTable).values({
+				publicId: crypto.randomUUID(),
+				userId: attacker.id,
+			});
+
+			mockCurrentUserId.mockResolvedValue({
+				success: true,
+				data: { userId: attacker.id },
+			});
+
+			const result = await addSubListItem({
+				subListPublicId,
+				listItemPublicId,
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("FORBIDDEN_ERROR");
+
+			const items = await db
+				.select()
+				.from(subListItemsTable)
+				.where(eq(subListItemsTable.subListId, subListId));
+			expect(items).toHaveLength(0);
 		});
 	});
 });

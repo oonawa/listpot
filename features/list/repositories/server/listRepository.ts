@@ -439,6 +439,17 @@ export async function findIntListItemIdByPublicId(listItemPublicId: string) {
 	return listItem?.id ?? null;
 }
 
+export async function findListItemWithListIdByPublicId(
+	listItemPublicId: string,
+): Promise<{ id: number; listId: number } | null> {
+	const [listItem] = await db
+		.select({ id: listItemsTable.id, listId: listItemsTable.listId })
+		.from(listItemsTable)
+		.where(eq(listItemsTable.publicId, listItemPublicId));
+
+	return listItem ?? null;
+}
+
 export async function insertWatchedItem(
 	listItemId: number,
 	watchedAt: Date,

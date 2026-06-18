@@ -19,17 +19,19 @@ const { mockSetCookie, mockCookies, mockHeaders } = vi.hoisted(() => {
 	const cookies = vi.fn(async () => ({
 		set: setCookie,
 	}));
-	const headers = vi.fn(async () => ({
-		get: (name: string) => {
-			if (name === "x-forwarded-for") {
-				return "127.0.0.1";
-			}
-			if (name === "user-agent") {
-				return "vitest-agent";
-			}
-			return null;
-		},
-	}));
+	const headers = vi.fn(
+		async (): Promise<{ get: (name: string) => string | null }> => ({
+			get: (name: string): string | null => {
+				if (name === "x-vercel-forwarded-for") {
+					return "127.0.0.1";
+				}
+				if (name === "user-agent") {
+					return "vitest-agent";
+				}
+				return null;
+			},
+		}),
+	);
 
 	return {
 		mockSetCookie: setCookie,

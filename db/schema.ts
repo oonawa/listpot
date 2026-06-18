@@ -213,6 +213,7 @@ export const tempSessionTokensTable = sqliteTable("temp_session_tokens_table", {
 export const loginAttemptsTable = sqliteTable("login_attempts_table", {
 	id: int().primaryKey({ autoIncrement: true }),
 	ipAddressHmac: text("ip_address_hmac").notNull(),
+	targetHmac: text("target_hmac").notNull(),
 	attemptType: text("attempt_type")
 		.$type<"code_verify" | "code_send">()
 		.notNull(),

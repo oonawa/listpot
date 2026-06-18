@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/db/client";
 import {
 	listItemsTable,
@@ -14,11 +14,20 @@ import type { ListItem } from "@/features/list/types/ListItem";
 import { computeHmac, encrypt } from "@/features/shared/lib/encryption";
 import { toggleWatchStatus } from "./toggleWatchStatus";
 
+const { mockCurrentUserId } = vi.hoisted(() => ({
+	mockCurrentUserId: vi.fn(),
+}));
+
+vi.mock("@/features/shared/actions/currentUserId", () => ({
+	currentUserId: mockCurrentUserId,
+}));
+
 describe("toggleWatchStatus", () => {
 	let testListId: number;
 	let testListItemId: number;
 	let testListItemPublicId: string;
 	let testStreamingServiceId: number;
+	let ownerUserId: number;
 
 	beforeEach(async () => {
 		const [user] = await db
@@ -47,6 +56,7 @@ describe("toggleWatchStatus", () => {
 			throw Error("streaming_services_table に netflix が存在しません");
 		}
 
+		ownerUserId = user.id;
 		testListId = list.id;
 		testStreamingServiceId = streamingService.id;
 
@@ -64,6 +74,11 @@ describe("toggleWatchStatus", () => {
 			.returning({ id: listItemsTable.id });
 
 		testListItemId = listItem.id;
+
+		mockCurrentUserId.mockResolvedValue({
+			success: true,
+			data: { userId: ownerUserId },
+		});
 	});
 
 	it("視聴済みに変更できる", async () => {
@@ -191,6 +206,79 @@ describe("toggleWatchStatus", () => {
 		}
 
 		expect(result.error.message).toBe("作品がリストに登録されていません。");
+	});
+
+	describe("所有権チェック（IDOR対策）", () => {
+		const buildMockListItem = (overrides?: Partial<ListItem>): ListItem => ({
+			listItemId: testListItemPublicId,
+			title: "テスト映画",
+			url: "https://www.netflix.com/jp/title/80100172",
+			serviceSlug: "netflix",
+			serviceName: "Netflix",
+			createdAt: new Date(),
+			isWatched: false,
+			watchedAt: null,
+			...overrides,
+		});
+
+		it("未認証ユーザーは視聴状態を変更できずUNAUTHORIZED_ERRORを返す", async () => {
+			mockCurrentUserId.mockResolvedValue({
+				success: false,
+				error: { code: "UNAUTHORIZED_ERROR", message: "ログインしていません。" },
+			});
+
+			const result = await toggleWatchStatus({
+				listItemId: testListItemPublicId,
+				isWatched: true,
+				currentListItem: buildMockListItem(),
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("UNAUTHORIZED_ERROR");
+
+			const watchedItems = await db
+				.select()
+				.from(watchedItemsTable)
+				.where(eq(watchedItemsTable.listItemId, testListItemId));
+			expect(watchedItems).toHaveLength(0);
+		});
+
+		it("他人の作品の視聴状態は変更できずFORBIDDEN_ERRORを返す", async () => {
+			const [attacker] = await db
+				.insert(usersTable)
+				.values({ publicId: "toggle-watch-status-attacker-user" })
+				.returning({ id: usersTable.id });
+			await db.insert(listsTable).values({
+				publicId: crypto.randomUUID(),
+				userId: attacker.id,
+			});
+
+			mockCurrentUserId.mockResolvedValue({
+				success: true,
+				data: { userId: attacker.id },
+			});
+
+			const result = await toggleWatchStatus({
+				listItemId: testListItemPublicId,
+				isWatched: true,
+				currentListItem: buildMockListItem(),
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("FORBIDDEN_ERROR");
+
+			const watchedItems = await db
+				.select()
+				.from(watchedItemsTable)
+				.where(eq(watchedItemsTable.listItemId, testListItemId));
+			expect(watchedItems).toHaveLength(0);
+		});
 	});
 
 	it("視聴済み解除時に既存レコードがない場合はNOT_FOUND_ERRORを返す", async () => {

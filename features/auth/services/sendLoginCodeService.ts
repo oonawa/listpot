@@ -14,10 +14,12 @@ import { PRO_DOMAIN } from "@/app/consts";
 export async function sendLoginCodeService({
 	email,
 	ipAddress,
+	target,
 	now,
 }: {
 	email: string;
 	ipAddress: string;
+	target: string;
 	now: Date;
 }): Promise<Result> {
 	if (!process.env.RESEND_API_KEY) {
@@ -60,6 +62,7 @@ export async function sendLoginCodeService({
 			await deleteLoginCode({ emailHmac });
 			await insertAttempt({
 				ipAddress,
+				target,
 				attemptType: "code_send",
 				success: false,
 			});
@@ -77,6 +80,7 @@ export async function sendLoginCodeService({
 
 		await insertAttempt({
 			ipAddress,
+			target,
 			attemptType: "code_send",
 			success: true,
 		});

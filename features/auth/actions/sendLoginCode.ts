@@ -3,6 +3,7 @@
 import z from "zod";
 import { headers } from "next/headers";
 import type { Result } from "@/features/shared/types/Result";
+import { getClientIp } from "@/features/shared/lib/getClientIp";
 import { checkRateLimitService } from "../services/checkRateLimitService";
 import { sendLoginCodeService } from "../services/sendLoginCodeService";
 
@@ -26,12 +27,12 @@ export async function sendLoginCode(email: string): Promise<Result> {
 	}
 
 	const headersList = await headers();
+	const ipAddress = getClientIp(headersList);
+	const target = parsed.data.email;
 
-	const { limit, ipAddress } = await checkRateLimitService({
-		ipAddress:
-			headersList.get("x-forwarded-for")?.split(",")[0] ||
-			headersList.get("x-real-ip") ||
-			"unknown",
+	const { limit } = await checkRateLimitService({
+		ipAddress,
+		target,
 		attemptType: "code_send",
 		now,
 	});
@@ -53,6 +54,7 @@ export async function sendLoginCode(email: string): Promise<Result> {
 	return await sendLoginCodeService({
 		email: parsed.data.email,
 		ipAddress,
+		target,
 		now,
 	});
 }

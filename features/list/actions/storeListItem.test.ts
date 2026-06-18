@@ -1,7 +1,15 @@
 import crypto from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/db/client";
+
+const { mockCurrentUserId } = vi.hoisted(() => ({
+	mockCurrentUserId: vi.fn(),
+}));
+
+vi.mock("@/features/shared/actions/currentUserId", () => ({
+	currentUserId: mockCurrentUserId,
+}));
 import {
 	directorCacheTable,
 	directorsTable,
@@ -288,6 +296,7 @@ async function assertMovieDirectorRecord({
 describe("storeMovie", () => {
 	let testListId: number;
 	let testPublicListId: string;
+	let ownerUserId: number;
 
 	beforeEach(async () => {
 		const [user] = await db
@@ -306,8 +315,14 @@ describe("storeMovie", () => {
 			.insert(listsTable)
 			.values({ publicId: crypto.randomUUID(), userId: user.id })
 			.returning();
+		ownerUserId = user.id;
 		testListId = list.id;
 		testPublicListId = list.publicId;
+
+		mockCurrentUserId.mockResolvedValue({
+			success: true,
+			data: { userId: ownerUserId },
+		});
 	});
 
 	it("配信作品の情報をリストへ新規登録できる", async () => {
@@ -659,5 +674,146 @@ describe("storeMovie", () => {
 		expect(storedListItems).toHaveLength(0);
 		await assertMoviesTableHasNoRecords();
 		await assertDirectorsTableHasNoRecords();
+	});
+
+	describe("URLスキーム制限（XSS対策）", () => {
+		const buildMovieWithUrl = (url: string): ListItem => ({
+			listItemId: crypto.randomUUID(),
+			title: "スキームテスト映画",
+			url,
+			serviceSlug: "netflix",
+			serviceName: "Netflix",
+			createdAt: new Date(),
+			isWatched: false,
+			watchedAt: null,
+		});
+
+		async function assertNotStored() {
+			const storedListItems = await db
+				.select({ id: listItemsTable.id })
+				.from(listItemsTable)
+				.where(eq(listItemsTable.listId, testListId));
+			expect(storedListItems).toHaveLength(0);
+		}
+
+		it("javascript: スキームのURLは登録できずVALIDATION_ERRORを返す", async () => {
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie: buildMovieWithUrl("javascript:alert(1)"),
+			});
+
+			expect(result).toEqual({
+				success: false,
+				error: {
+					code: "VALIDATION_ERROR",
+					message: "不正なリクエストです。",
+				},
+			});
+			await assertNotStored();
+		});
+
+		it("data: スキームのURLは登録できずVALIDATION_ERRORを返す", async () => {
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie: buildMovieWithUrl(
+					"data:text/html,<script>alert(1)</script>",
+				),
+			});
+
+			expect(result).toEqual({
+				success: false,
+				error: {
+					code: "VALIDATION_ERROR",
+					message: "不正なリクエストです。",
+				},
+			});
+			await assertNotStored();
+		});
+
+		it("vbscript: スキームのURLは登録できずVALIDATION_ERRORを返す", async () => {
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie: buildMovieWithUrl("vbscript:msgbox(1)"),
+			});
+
+			expect(result).toEqual({
+				success: false,
+				error: {
+					code: "VALIDATION_ERROR",
+					message: "不正なリクエストです。",
+				},
+			});
+			await assertNotStored();
+		});
+	});
+
+	describe("所有権チェック（IDOR対策）", () => {
+		const buildMovie = (): ListItem => ({
+			listItemId: crypto.randomUUID(),
+			title: "侵入テスト映画",
+			url: "https://www.netflix.com/jp/title/80100172",
+			serviceSlug: "netflix",
+			serviceName: "Netflix",
+			createdAt: new Date(),
+			isWatched: false,
+			watchedAt: null,
+		});
+
+		it("未認証ユーザーは作品を登録できずUNAUTHORIZED_ERRORを返す", async () => {
+			mockCurrentUserId.mockResolvedValue({
+				success: false,
+				error: { code: "UNAUTHORIZED_ERROR", message: "ログインしていません。" },
+			});
+
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie: buildMovie(),
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("UNAUTHORIZED_ERROR");
+
+			const storedListItems = await db
+				.select({ id: listItemsTable.id })
+				.from(listItemsTable)
+				.where(eq(listItemsTable.listId, testListId));
+			expect(storedListItems).toHaveLength(0);
+		});
+
+		it("他人のリストへは作品を登録できずFORBIDDEN_ERRORを返す", async () => {
+			const [attacker] = await db
+				.insert(usersTable)
+				.values({ publicId: "store-list-item-attacker-user" })
+				.returning({ id: usersTable.id });
+			await db.insert(listsTable).values({
+				publicId: crypto.randomUUID(),
+				userId: attacker.id,
+			});
+
+			mockCurrentUserId.mockResolvedValue({
+				success: true,
+				data: { userId: attacker.id },
+			});
+
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie: buildMovie(),
+			});
+
+			expect(result.success).toBe(false);
+			if (result.success) {
+				return;
+			}
+			expect(result.error.code).toBe("FORBIDDEN_ERROR");
+
+			const storedListItems = await db
+				.select({ id: listItemsTable.id })
+				.from(listItemsTable)
+				.where(eq(listItemsTable.listId, testListId));
+			expect(storedListItems).toHaveLength(0);
+		});
 	});
 });

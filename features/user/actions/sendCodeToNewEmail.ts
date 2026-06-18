@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import z from "zod";
 import type { Result } from "@/features/shared/types/Result";
 import { currentUserEmail } from "@/features/shared/actions/currentUserEmail";
+import { getClientIp } from "@/features/shared/lib/getClientIp";
 import { checkRateLimitService } from "@/features/auth/services/checkRateLimitService";
 import { sendCodeToNewEmailService } from "../services/sendCodeToNewEmailService";
 
@@ -37,13 +38,12 @@ export async function sendCodeToNewEmail(newEmail: string): Promise<Result> {
 	}
 
 	const headersList = await headers();
-	const ipAddress =
-		headersList.get("x-forwarded-for")?.split(",")[0] ||
-		headersList.get("x-real-ip") ||
-		"unknown";
+	const ipAddress = getClientIp(headersList);
+	const target = parsed.data.email;
 
 	const { limit } = await checkRateLimitService({
 		ipAddress,
+		target,
 		attemptType: "code_send",
 		now,
 	});
@@ -74,6 +74,7 @@ export async function sendCodeToNewEmail(newEmail: string): Promise<Result> {
 	return await sendCodeToNewEmailService({
 		newEmail: parsed.data.email,
 		ipAddress,
+		target,
 		now,
 	});
 }

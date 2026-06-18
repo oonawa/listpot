@@ -30,23 +30,35 @@ Next.js / Turso / Vercel のフルスタックな構成になっています。
 
 ### 環境変数
 
-`.env`と`.env.test`を使います。
+Next.js の規約に従い、ローカル開発では `.env`、テスト実行では `.env.test` を読み込みます。
 
-#### `.env`
+- `.env` — `.gitignore` 済み。各自で作成する
+- `.env.test` — リポジトリにコミット済み。`npm run test` / `npm run test:e2e` で自動的に読み込まれる
 
-| 変数名 | 用途 | 内容 |
-| --- | --- | --- |
-| RESEND_API_KEY | 認証時のメール送信 | [Resend](https://resend.com/)で発行 |
-| TMDB_API_KEY | 詳細な映画情報の取得 | [TMDB](https://www.themoviedb.org/?language=ja)で発行 |
-| TURSO_DATABASE_URL | アプリケーションが接続するデータベースの指定 | `file:local.db` |
-| JWT_SECRET | セッションごとに発行されるトークンの検証 | ランダム文字列を指定 or `openssl rand -hex 64`などで作成
+> ⚠️ `.env.test` はテスト専用の値（ローカル SQLite ＋ ダミー API キー）です。リポジトリ公開済みのため、**`.env` や本番（Vercel など）で同じ値を流用してはいけません**。特に `JWT_SECRET` / `ENCRYPTION_KEY` / `HMAC_SECRET` は環境ごとに必ず別の値を設定してください。
 
-#### `.env.test`
+#### `.env`（ローカル開発用）
 
 | 変数名 | 用途 | 内容 |
 | --- | --- | --- |
-| TURSO_DATABASE_URL | アプリケーションが接続するデータベースの指定 | `file:local.test.db` |
-| JWT_SECRET | セッションごとに発行されるトークンの検証 | ランダム文字列を指定 or `openssl rand -hex 64`などで作成
+| `TURSO_DATABASE_URL` | 接続先 DB の指定 | `file:local.db` |
+| `RESEND_API_KEY` | 認証メール送信 | [Resend](https://resend.com/) で発行 |
+| `TMDB_API_KEY` | 映画情報の取得 | [TMDB](https://www.themoviedb.org/?language=ja) で発行 |
+| `JWT_SECRET` | セッショントークン署名 | `openssl rand -hex 64` |
+| `ENCRYPTION_KEY` | メールアドレス暗号化（AES-256-GCM） | `openssl rand -hex 32` |
+| `HMAC_SECRET` | メールアドレスの HMAC インデックス | `openssl rand -hex 32` |
+| `COOKIE_SECURE` | Cookie の Secure 属性 | 既定 `true`。ローカルで `http` を使う場合のみ `false` |
+
+#### `.env.test`（テスト実行用）
+
+リポジトリにコミット済みのため、クローン後そのままテストが動きます。値はテスト専用で、外部サービスには接続しません。
+
+| 変数名 | 値 | 備考 |
+| --- | --- | --- |
+| `TURSO_DATABASE_URL` | `file:local.test.db` | ローカル SQLite |
+| `RESEND_API_KEY` | `re_test_dummy` | ダミー値（実際には送信されない） |
+| `COOKIE_SECURE` | `false` | HTTP のテストサーバー向け |
+| `JWT_SECRET` / `ENCRYPTION_KEY` / `HMAC_SECRET` | テスト用ランダム値 | 本番・ローカル開発と必ず異なる値で固定 |
 
 ### リポジトリをクローン
 

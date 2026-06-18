@@ -27,8 +27,10 @@ async function findStreamingServiceIdBySlug(slug: "netflix") {
 
 describe("manageSubListItemService", () => {
 	let subListId = 0;
+	let subListPublicId = "";
 	let listItemId = 0;
 	let listItemPublicId = "";
+	let userId = 0;
 
 	beforeEach(async () => {
 		await db.delete(subListItemsTable);
@@ -41,16 +43,18 @@ describe("manageSubListItemService", () => {
 			.insert(usersTable)
 			.values({ publicId: "manage-sub-list-item-service-user" })
 			.returning({ id: usersTable.id });
+		userId = user.id;
 
 		const [list] = await db
 			.insert(listsTable)
 			.values({ publicId: crypto.randomUUID(), userId: user.id })
 			.returning({ id: listsTable.id });
 
+		subListPublicId = crypto.randomUUID();
 		const [subList] = await db
 			.insert(subListsTable)
 			.values({
-				publicId: crypto.randomUUID(),
+				publicId: subListPublicId,
 				listId: list.id,
 				name: "テストサブリスト",
 				createdAt: new Date(),
@@ -78,8 +82,9 @@ describe("manageSubListItemService", () => {
 	describe("add アクション", () => {
 		it("アイテムをサブリストへ追加できる", async () => {
 			const result = await manageSubListItemService({
-				subListId,
+				subListPublicId,
 				listItemPublicId,
+				userId,
 				action: "add",
 			});
 
@@ -96,8 +101,9 @@ describe("manageSubListItemService", () => {
 
 		it("存在しないlistItemPublicIdでは失敗する", async () => {
 			const result = await manageSubListItemService({
-				subListId,
+				subListPublicId,
 				listItemPublicId: crypto.randomUUID(),
+				userId,
 				action: "add",
 			});
 
@@ -116,8 +122,9 @@ describe("manageSubListItemService", () => {
 				.values({ subListId, listItemId });
 
 			const result = await manageSubListItemService({
-				subListId,
+				subListPublicId,
 				listItemPublicId,
+				userId,
 				action: "remove",
 			});
 
