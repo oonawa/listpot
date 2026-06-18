@@ -137,7 +137,7 @@ describe("sendLoginCode", () => {
 			expect.objectContaining({
 				to: existingUserEmail,
 				subject: "【LISTPOT】ログインコードをお送りします",
-				from: "りすとぽっと <hi@risutopo.com>",
+				from: "LISTPOT <hi@listpot.fun>",
 				react: `loginCode:${templateArg.loginCode} url:https://localhost:3000`,
 			}),
 		);
@@ -189,7 +189,7 @@ describe("sendLoginCode", () => {
 			expect.objectContaining({
 				to: unregisteredUserEmail,
 				subject: "【LISTPOT】ログインコードをお送りします",
-				from: "りすとぽっと <hi@risutopo.com>",
+				from: "LISTPOT <hi@listpot.fun>",
 				react: `loginCode:${templateArg.loginCode} url:https://localhost:3000`,
 			}),
 		);
