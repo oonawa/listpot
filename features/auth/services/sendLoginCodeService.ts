@@ -9,6 +9,7 @@ import { sendLoginMail } from "../repositories/sendLoginMailRepository";
 import { insertAttempt } from "../repositories/attemptRepository";
 import { getUserByEmail } from "@/features/user/repositories/userRepository";
 import { computeHmac } from "@/features/shared/lib/encryption";
+import { PRO_DOMAIN } from "@/app/consts";
 
 export async function sendLoginCodeService({
 	email,
@@ -50,8 +51,8 @@ export async function sendLoginCodeService({
 		const response = await sendLoginMail({
 			email,
 			loginCode,
-			url: process.env.VERCEL_URL
-				? `https://${process.env.VERCEL_URL}`
+			url: process.env.NODE_ENV === "production"
+				? PRO_DOMAIN
 				: "https://localhost:3000",
 		});
 

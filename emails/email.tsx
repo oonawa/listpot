@@ -13,8 +13,6 @@ type Props = {
 };
 
 export default function LoginMailTemplate({ loginCode, url }: Props) {
-	const origin = url ?? "https://localhost:3000";
-
 	return (
 		<Html lang="ja">
 			<Tailwind
@@ -26,10 +24,11 @@ export default function LoginMailTemplate({ loginCode, url }: Props) {
 					<Container className="w-full">
 						<Container className="w-full">
 							<Img
-								src={`${origin}/logo-email.png`}
+								src={`${url}/logo-email.png`}
 								alt="LISTPOT"
+								width="500"
                                 height="152"
-								className="w-full"
+								className="w-full h-auto"
 							/>
 						</Container>
 
