@@ -1,3 +1,5 @@
+export const PRO_DOMAIN = "https://listpot.fun" as const;
+
 export const SUPPORTED_SERVICES = {
 	U_NEXT: {
 		name: "U-NEXT",
