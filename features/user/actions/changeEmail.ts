@@ -5,6 +5,7 @@ import z from "zod";
 import type { Result } from "@/features/shared/types/Result";
 import { currentUserId } from "@/features/shared/actions/currentUserId";
 import { currentUserEmail } from "@/features/shared/actions/currentUserEmail";
+import { getClientIp } from "@/features/shared/lib/getClientIp";
 import { checkRateLimitService } from "@/features/auth/services/checkRateLimitService";
 import { loginCodeSchema } from "@/features/auth/schemas/loginSchemas";
 import { changeEmailService } from "../services/changeEmailService";
@@ -69,13 +70,12 @@ export async function changeEmail(
 	}
 
 	const headersList = await headers();
-	const ipAddress =
-		headersList.get("x-forwarded-for")?.split(",")[0] ||
-		headersList.get("x-real-ip") ||
-		"unknown";
+	const ipAddress = getClientIp(headersList);
+	const target = emailParsed.data.email;
 
 	const { limit } = await checkRateLimitService({
 		ipAddress,
+		target,
 		attemptType: "code_verify",
 		now,
 	});
@@ -99,6 +99,7 @@ export async function changeEmail(
 		userId: userIdResult.data.userId,
 		reauthToken,
 		ipAddress,
+		target,
 		now,
 	});
 

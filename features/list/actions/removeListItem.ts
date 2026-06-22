@@ -1,6 +1,7 @@
 "use server";
 
 import z from "zod";
+import { currentUserId } from "@/features/shared/actions/currentUserId";
 import type { Result } from "@/features/shared/types/Result";
 import { removeListItemService } from "../services/removeListItemService";
 
@@ -26,5 +27,20 @@ export async function removeListItem({ listItemId }: Args): Promise<Result> {
 		};
 	}
 
-	return await removeListItemService({ listItemId: parsed.data.listItemId });
+	const authResult = await currentUserId();
+
+	if (!authResult.success) {
+		return {
+			success: false,
+			error: {
+				code: "UNAUTHORIZED_ERROR",
+				message: "ログインかユーザー登録をしてください。",
+			},
+		};
+	}
+
+	return await removeListItemService({
+		listItemId: parsed.data.listItemId,
+		userId: authResult.data.userId,
+	});
 }

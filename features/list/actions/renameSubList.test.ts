@@ -149,6 +149,29 @@ describe("renameSubList", () => {
 		});
 	});
 
+	it("51文字以上の名称は受け付けない", async () => {
+		mockCurrentUserId.mockResolvedValue({ success: true, data: { userId } });
+
+		const result = await renameSubList({
+			subListPublicId,
+			name: "あ".repeat(51),
+		});
+
+		expect(result).toEqual({
+			success: false,
+			error: {
+				code: "VALIDATION_ERROR",
+				message: "不正なリクエストです。",
+			},
+		});
+
+		const [subList] = await db
+			.select({ name: subListsTable.name })
+			.from(subListsTable)
+			.where(eq(subListsTable.id, subListId));
+		expect(subList?.name).toBe("変更前の名前");
+	});
+
 	it("存在しない subListPublicId は名称変更できない", async () => {
 		mockCurrentUserId.mockResolvedValue({ success: true, data: { userId } });
 

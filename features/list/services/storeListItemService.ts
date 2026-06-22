@@ -2,6 +2,7 @@ import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
 	findListIdByPublicId,
+	findListIdByUserId,
 	findListItemIdByPublicIdAndListId,
 	findStreamingServiceBySlug,
 	insertListItem,
@@ -12,18 +13,34 @@ export async function storeListItemService({
 	publicListId,
 	movie,
 	now,
+	userId,
 }: {
 	publicListId: string;
 	movie: ListItem;
 	now: Date;
+	userId: number;
 }): Promise<Result<ListItem>> {
-	const listId = await findListIdByPublicId(publicListId);
+	const [listId, userListIdValue] = await Promise.all([
+		findListIdByPublicId(publicListId),
+		findListIdByUserId(userId),
+	]);
+
 	if (listId === null) {
 		return {
 			success: false,
 			error: {
 				code: "NOT_FOUND_ERROR",
 				message: "リストが見つかりませんでした。",
+			},
+		};
+	}
+
+	if (listId !== userListIdValue) {
+		return {
+			success: false,
+			error: {
+				code: "FORBIDDEN_ERROR",
+				message: "このリストへ作品を登録する権限がありません。",
 			},
 		};
 	}

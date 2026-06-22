@@ -2,6 +2,7 @@
 
 import { cookies, headers } from "next/headers";
 import type { Result } from "@/features/shared/types/Result";
+import { getClientIp } from "@/features/shared/lib/getClientIp";
 import { loginCodeSchema } from "../schemas/loginSchemas";
 import { checkRateLimitService } from "../services/checkRateLimitService";
 import { issueReauthTokenService } from "../services/issueReauthTokenService";
@@ -57,13 +58,12 @@ export async function issueReauthToken(
 	}
 
 	const headersList = await headers();
-	const ipAddress =
-		headersList.get("x-forwarded-for")?.split(",")[0] ||
-		headersList.get("x-real-ip") ||
-		"unknown";
+	const ipAddress = getClientIp(headersList);
+	const target = String(verifiedSession.data.userId);
 
 	const { limit } = await checkRateLimitService({
 		ipAddress,
+		target,
 		attemptType: "code_verify",
 		now,
 	});
@@ -85,6 +85,7 @@ export async function issueReauthToken(
 		loginCode: parsed.data.value,
 		userId: verifiedSession.data.userId,
 		ipAddress,
+		target,
 		now,
 	});
 

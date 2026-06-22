@@ -17,11 +17,23 @@ const supportedServiceNameSchema = z.enum([
 	SUPPORTED_SERVICES.DISNEY_PLUS.name,
 ]);
 
+const httpUrlSchema = z.url().refine(
+	(value) => {
+		try {
+			const protocol = new URL(value).protocol;
+			return protocol === "http:" || protocol === "https:";
+		} catch {
+			return false;
+		}
+	},
+	{ message: "URLは http または https のみ許可されます。" },
+);
+
 const listItemDetailsSchema = z.object({
 	movieId: z.number().int().positive(),
 	officialTitle: z.string().min(1),
-	backgroundImage: z.url(),
-	posterImage: z.url(),
+	backgroundImage: httpUrlSchema,
+	posterImage: httpUrlSchema,
 	director: z.array(z.string().min(1)),
 	runningMinutes: z.number().int().positive(),
 	releaseYear: z.number().int(),
@@ -33,7 +45,7 @@ const listItemDetailsSchema = z.object({
 const listItemBaseSchema = z.object({
 	listItemId: z.uuid(),
 	title: z.string().min(1),
-	url: z.url(),
+	url: httpUrlSchema,
 	serviceSlug: supportedServiceSlugSchema,
 	serviceName: supportedServiceNameSchema,
 	createdAt: z.coerce.date(),

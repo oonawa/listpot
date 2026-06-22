@@ -1,0 +1,17 @@
+name: Audit
+
+on:
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: 脆弱性監査（本番依存の HIGH 以上のみ）
+        run: npm audit --audit-level=high --omit=dev

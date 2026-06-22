@@ -8,7 +8,7 @@ import { renameSubListService } from "../services/renameSubListService";
 
 const renameSubListSchema = z.object({
 	subListPublicId: z.uuid(),
-	name: z.string().min(1),
+	name: z.string().min(1).max(50),
 });
 
 export async function renameSubList({

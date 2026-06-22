@@ -47,6 +47,55 @@ type Result<T> = { success: true; data: T } | { success: false; error: AppError 
 
 レート制限は `login_attempts` テーブルで管理。
 
+## 認可
+
+更新系 Action（mutation）は **Service 層で所有権を照合する**。Action 層で代用してはいけない（Service が単独で安全に呼び出せる状態を保つため）。
+
+### 規約
+
+- **Action 層**: `currentUserId()` で userId を取得し、Service に渡す。未認証なら `UNAUTHORIZED_ERROR` を返す。
+- **Service 層**: 操作対象リソースの所有者と `userId` を照合する。
+  - リソース不在 → `NOT_FOUND_ERROR`
+  - 他人のリソース → `FORBIDDEN_ERROR`
+
+### スケルトン
+
+```typescript
+// actions/updateHoge.ts
+export async function updateHoge(args: Args): Promise<Result<Hoge>> {
+  const parsed = schema.safeParse(args);
+  if (!parsed.success) {
+    return { success: false, error: { code: "VALIDATION_ERROR", message: "..." } };
+  }
+
+  const authResult = await currentUserId();
+  if (!authResult.success) {
+    return { success: false, error: { code: "UNAUTHORIZED_ERROR", message: "..." } };
+  }
+
+  return await updateHogeService({ ...args, userId: authResult.data.userId });
+}
+
+// services/updateHogeService.ts
+export async function updateHogeService({
+  publicId,
+  userId,
+  ...
+}: Args): Promise<Result<Hoge>> {
+  const resource = await findResourceByPublicId(publicId);
+  if (resource === null) {
+    return { success: false, error: { code: "NOT_FOUND_ERROR", message: "..." } };
+  }
+  if (resource.ownerId !== userId) {
+    return { success: false, error: { code: "FORBIDDEN_ERROR", message: "..." } };
+  }
+
+  // ビジネスロジック
+}
+```
+
+参照系（read）も同様に Service 層で所有権を照合する。
+
 ## データベース
 
 - スキーマ: `db/schema.ts`

@@ -1,8 +1,8 @@
 "use server";
 
 import z from "zod";
+import { currentUserId } from "@/features/shared/actions/currentUserId";
 import type { Result } from "@/features/shared/types/Result";
-import { findSubListIdByPublicId } from "../repositories/server/listRepository";
 import { manageSubListItemService } from "../services/manageSubListItemService";
 
 const removeSubListItemSchema = z.object({
@@ -32,21 +32,22 @@ export async function removeSubListItem({
 		};
 	}
 
-	const subListId = await findSubListIdByPublicId(parsed.data.subListPublicId);
+	const authResult = await currentUserId();
 
-	if (!subListId) {
+	if (!authResult.success) {
 		return {
 			success: false,
 			error: {
-				code: "NOT_FOUND_ERROR",
-				message: "サブリストが見つかりませんでした。",
+				code: "UNAUTHORIZED_ERROR",
+				message: "ログインかユーザー登録をしてください。",
 			},
 		};
 	}
 
 	return await manageSubListItemService({
-		subListId,
+		subListPublicId: parsed.data.subListPublicId,
 		listItemPublicId: parsed.data.listItemPublicId,
+		userId: authResult.data.userId,
 		action: "remove",
 	});
 }

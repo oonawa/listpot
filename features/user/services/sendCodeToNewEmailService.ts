@@ -5,10 +5,12 @@ import { checkEmailExists } from "../repositories/userEmailRepository";
 export async function sendCodeToNewEmailService({
 	newEmail,
 	ipAddress,
+	target,
 	now,
 }: {
 	newEmail: string;
 	ipAddress: string;
+	target: string;
 	now: Date;
 }): Promise<Result> {
 	const emailTaken = await checkEmailExists(newEmail);
@@ -22,5 +24,10 @@ export async function sendCodeToNewEmailService({
 		};
 	}
 
-	return await sendLoginCodeService({ email: newEmail, ipAddress, now });
+	return await sendLoginCodeService({
+		email: newEmail,
+		ipAddress,
+		target,
+		now,
+	});
 }

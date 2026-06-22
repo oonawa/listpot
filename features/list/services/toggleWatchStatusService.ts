@@ -1,24 +1,30 @@
 import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
-	findIntListItemIdByPublicId,
-	insertWatchedItem,
 	deleteWatchedItem,
+	findListIdByUserId,
+	findListItemWithListIdByPublicId,
+	insertWatchedItem,
 } from "@/features/list/repositories/server/listRepository";
 
 export async function toggleWatchStatusService({
 	listItemId,
 	isWatched,
 	currentListItem,
+	userId,
 }: {
 	listItemId: string;
 	isWatched: boolean;
 	currentListItem: ListItem;
+	userId: number;
 }): Promise<Result<ListItem>> {
 	try {
-		// 1. listItemId を int に変換
-		const intListItemId = await findIntListItemIdByPublicId(listItemId);
-		if (!intListItemId) {
+		const [listItem, userListIdValue] = await Promise.all([
+			findListItemWithListIdByPublicId(listItemId),
+			findListIdByUserId(userId),
+		]);
+
+		if (!listItem) {
 			return {
 				success: false,
 				error: {
@@ -28,11 +34,20 @@ export async function toggleWatchStatusService({
 			};
 		}
 
-		// 2. isWatched の状態に応じて INSERT/DELETE
+		if (listItem.listId !== userListIdValue) {
+			return {
+				success: false,
+				error: {
+					code: "FORBIDDEN_ERROR",
+					message: "この作品の視聴状態を変更する権限がありません。",
+				},
+			};
+		}
+
 		if (isWatched) {
-			await insertWatchedItem(intListItemId, new Date());
+			await insertWatchedItem(listItem.id, new Date());
 		} else {
-			const deleted = await deleteWatchedItem(intListItemId);
+			const deleted = await deleteWatchedItem(listItem.id);
 			if (!deleted) {
 				return {
 					success: false,
@@ -44,8 +59,7 @@ export async function toggleWatchStatusService({
 			}
 		}
 
-		// 3. 更新後の ListItem を構築
-		const listItem: ListItem = isWatched
+		const updated: ListItem = isWatched
 			? {
 					...currentListItem,
 					isWatched: true,
@@ -59,7 +73,7 @@ export async function toggleWatchStatusService({
 
 		return {
 			success: true,
-			data: listItem,
+			data: updated,
 		};
 	} catch (error) {
 		console.error(error);

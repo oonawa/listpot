@@ -17,11 +17,13 @@ import { decrypt } from "@/features/shared/lib/encryption";
 export async function loginService({
 	loginCode,
 	ipAddress,
+	target,
 	deviceId,
 	now,
 }: {
 	loginCode: string;
 	ipAddress: string;
+	target: string;
 	deviceId: string;
 	now: Date;
 }): Promise<
@@ -57,6 +59,7 @@ export async function loginService({
 					await insertAttempt({
 						tx,
 						ipAddress,
+						target,
 						attemptType: "code_verify",
 						success: false,
 					});
@@ -74,6 +77,7 @@ export async function loginService({
 				await insertAttempt({
 					tx,
 					ipAddress,
+					target,
 					attemptType: "code_verify",
 					success: true,
 				});
