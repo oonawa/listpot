@@ -1,6 +1,6 @@
 // E2E テスト用 DB ヘルパー（@/tests/helpers/db の E2E 版）
-import { sql } from "drizzle-orm";
-import { db } from "./testDb";
+
+import { SUPPORTED_SERVICES } from "@/app/consts";
 import {
 	deletedUsersTable,
 	directorCacheTable,
@@ -21,8 +21,12 @@ import {
 	usersTable,
 	watchedItemsTable,
 } from "@/db/schema";
-import { SUPPORTED_SERVICES } from "@/app/consts";
+import { db } from "./testDb";
 
+// 外部キー制約を満たす順に削除する（参照する側から先に消す）。
+// auto-increment の sqlite_sequence はリセットしない:
+// テストは ID を変数として受け取って利用するため固定値前提のロジックはなく、
+// 連番化することで本番に近い ID ユニーク性を保ったまま検証できる。
 export async function cleanupTables() {
 	await db.delete(reauthTokensTable);
 	await db.delete(deletedUsersTable);
@@ -43,28 +47,6 @@ export async function cleanupTables() {
 	await db.delete(usersTable);
 }
 
-export async function resetSequences() {
-	await db.run(
-		sql`DELETE FROM sqlite_sequence WHERE name = 'streaming_services_table'`,
-	);
-	await db.run(sql`DELETE FROM sqlite_sequence WHERE name = 'movies_table'`);
-	await db.run(sql`DELETE FROM sqlite_sequence WHERE name = 'directors_table'`);
-	await db.run(sql`DELETE FROM sqlite_sequence WHERE name = 'users_table'`);
-	await db.run(
-		sql`DELETE FROM sqlite_sequence WHERE name = 'user_emails_table'`,
-	);
-	await db.run(
-		sql`DELETE FROM sqlite_sequence WHERE name = 'login_attempts_table'`,
-	);
-	await db.run(
-		sql`DELETE FROM sqlite_sequence WHERE name = 'movie_directors_table'`,
-	);
-	await db.run(sql`DELETE FROM sqlite_sequence WHERE name = 'lists_table'`);
-	await db.run(
-		sql`DELETE FROM sqlite_sequence WHERE name = 'list_items_table'`,
-	);
-}
-
 export async function seedDatabase() {
 	const values = Object.values(SUPPORTED_SERVICES).map(({ name, slug }) => ({
 		name,
@@ -75,5 +57,4 @@ export async function seedDatabase() {
 
 export async function resetDatabase() {
 	await cleanupTables();
-	await resetSequences();
 }

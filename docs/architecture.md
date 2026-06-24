@@ -96,6 +96,54 @@ export async function updateHogeService({
 
 参照系（read）も同様に Service 層で所有権を照合する。
 
+## キャッシュ
+
+Server 側のデータ取得キャッシュは **Service 層** で行う。Next.js の `unstable_cache` を使用する。
+
+### 規約
+
+- **キャッシュ実装**: 読み取り系 Service を `unstable_cache` でラップする。`"use cache"` ディレクティブは使用しない。
+- **キー**: 認可情報（userId 等）を必ず含める。他人のキャッシュを誤返却する事故を構造的に防ぐため。
+- **タグ**: ドメイン単位で命名する（例: `list:${listId}`）。
+- **パージ**: mutation 系 Service の末尾で `revalidateTag` を呼ぶ。Action 層・Page 層・Repository 層はキャッシュを意識しない。
+
+### なぜ Service 層か
+
+- 認可情報を持つため、キャッシュキーに userId を含められる
+- ビジネス概念単位（リスト全体、SubList ビュー等）の粒度でキャッシュできる
+- mutation Service が「自分が何を変えたか」を知っているため、パージ責務を自然に持てる
+- Action 層を「バリデーション + 認証 + Service 呼び出し」に保てる
+
+### なぜ `unstable_cache` か
+
+- 関数 1 個に wrapper を被せるだけで剥がしやすい（将来 Next.js 非依存の KV 実装に移行可能）
+- キャッシュ設定が呼び出し箇所に明示され、レビューしやすい
+- Vitest テストでは `vi.mock("next/cache")` で安定して透過化できる（テストモックは `tests/helpers/setup.ts` に集約）
+
+### スケルトン
+
+```typescript
+// services/getHogeService.ts
+import { unstable_cache } from "next/cache";
+
+export const getHogeService = async (hogeId: number, userId: number) => {
+  return unstable_cache(
+    async () => { /* DB アクセスとマッピング */ },
+    ["getHogeService", String(hogeId), String(userId)],
+    { tags: [`hoge:${hogeId}`] }
+  )();
+};
+
+// services/updateHogeService.ts
+import { revalidateTag } from "next/cache";
+
+export async function updateHogeService({ hogeId, userId, ... }) {
+  // 認可 + 更新処理
+  revalidateTag(`hoge:${hogeId}`);
+  return { success: true, data: ... };
+}
+```
+
 ## データベース
 
 - スキーマ: `db/schema.ts`
