@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { db } from "@/db/client";
 import type { Result } from "@/features/shared/types/Result";
 import {
@@ -75,6 +76,8 @@ export const manageSubListItemService = async ({
 	} else {
 		await deleteSubListItem(subList.id, listItem.id);
 	}
+
+	revalidateTag(`list:${subList.listId}`, "default");
 
 	return { success: true };
 };

@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
@@ -70,6 +71,8 @@ export async function toggleWatchStatusService({
 					isWatched: false,
 					watchedAt: null,
 				};
+
+		revalidateTag(`list:${listItem.listId}`, "default");
 
 		return {
 			success: true,

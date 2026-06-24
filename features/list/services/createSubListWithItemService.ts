@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { db } from "@/db/client";
 import type { Result } from "@/features/shared/types/Result";
 import {
@@ -33,6 +34,8 @@ export const createSubListWithItemService = async ({
 		const subList = await insertSubList(tx, { listId, publicId, name });
 		await insertSubListItem(tx, { subListId: subList.id, listItemId });
 	});
+
+	revalidateTag(`list:${listId}`, "default");
 
 	return {
 		success: true,

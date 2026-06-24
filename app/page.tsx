@@ -13,7 +13,17 @@ type Props = {
 	}>;
 };
 
+// モバイル判定は他より先に行う（Android UA には "Linux" が含まれるため）。
 const MOBILE_UA_PATTERN = /Android|iPhone|iPod|Opera Mini|IEMobile|WPDesktop/i;
+// Windows / Linux デスクトップ（X11）/ ChromeOS は PC 確定。
+const PC_UA_PATTERN = /Windows|X11|CrOS/;
+
+function resolveDefaultTab(ua: string): "mobile" | "pc" | undefined {
+	if (MOBILE_UA_PATTERN.test(ua)) return "mobile";
+	if (PC_UA_PATTERN.test(ua)) return "pc";
+	// Mac UA は iPadOS 13+ と区別不能なので CSS pointer media query に委ねる。
+	return undefined;
+}
 
 export default async function HomePage({ searchParams }: Props) {
 	const params = await searchParams;
@@ -21,7 +31,7 @@ export default async function HomePage({ searchParams }: Props) {
 
 	const headersList = await headers();
 	const ua = headersList.get("user-agent") ?? "";
-	const defaultTab = MOBILE_UA_PATTERN.test(ua) ? ("mobile" as const) : undefined;
+	const defaultTab = resolveDefaultTab(ua);
 
 	const publicListIdResult = await currentUserPublicListId();
 	const publicListId = publicListIdResult.success
