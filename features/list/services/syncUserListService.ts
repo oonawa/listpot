@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Tx } from "@/db/client";
 import type { ListItem } from "@/features/list/types/ListItem";
 import type { LocalSubList } from "@/features/user/schemas/localListSchema";
@@ -25,7 +26,7 @@ export const syncUserListService = async ({
 	const watchUrls = items.map((item) => item.url);
 
 	try {
-		return await db.transaction(async (tx) => {
+		const result = await db.transaction(async (tx): Promise<Result> => {
 			const existingDuplicateListItems = await findSameListItems({
 				listId,
 				watchUrls,
@@ -81,6 +82,10 @@ export const syncUserListService = async ({
 				success: true,
 			};
 		});
+
+		revalidateTag(`list:${listId}`, "default");
+
+		return result;
 	} catch (err) {
 		console.error(err);
 		return {

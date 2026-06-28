@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
@@ -95,6 +96,8 @@ export async function storeListItemService({
 					},
 				}
 			: {};
+
+		revalidateTag(`list:${listId}`, "default");
 
 		if (movie.isWatched) {
 			return {
