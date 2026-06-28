@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "next dev --experimental-https",
 		"build": "next build",
+		"analyze": "ANALYZE=true next build",
 		"start": "next start",
 		"lint": "biome lint --write .",
 		"format": "biome format --write .",
@@ -51,6 +52,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.1",
+		"@next/bundle-analyzer": "^16.2.9",
 		"@playwright/test": "^1.61.0",
 		"@react-email/preview-server": "5.2.10",
 		"@storybook/nextjs-vite": "^10.4.6",

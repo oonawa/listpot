@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import {
 	findListIdByUserId,
@@ -40,6 +41,8 @@ export const renameSubListService = async ({
 	}
 
 	await updateSubListName(subList.id, name);
+
+	revalidateTag(`list:${subList.listId}`, "default");
 
 	return { success: true };
 };

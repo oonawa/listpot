@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { cache } from "react";
 
 import type { SupportedServiceName, SupportedServiceSlug } from "@/app/consts";
 import type { Tx } from "@/db/client";
@@ -76,14 +77,14 @@ export async function findPublicListIdByUserId(userId: number) {
 	return list ? list.publicId : null;
 }
 
-export async function findListIdByUserId(userId: number) {
+export const findListIdByUserId = cache(async (userId: number) => {
 	const [list] = await db
 		.select({ id: listsTable.id })
 		.from(listsTable)
 		.where(eq(listsTable.userId, userId));
 
 	return list ? list.id : null;
-}
+});
 
 export async function findStreamingServiceBySlug(slug: SupportedServiceSlug) {
 	const [streamingService] = await db

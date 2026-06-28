@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import {
 	deleteListItemByPublicId,
@@ -48,6 +49,8 @@ export async function removeListItemService({
 				},
 			};
 		}
+
+		revalidateTag(`list:${listItem.listId}`, "default");
 
 		return { success: true };
 	} catch (error) {

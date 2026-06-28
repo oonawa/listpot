@@ -1,33 +1,11 @@
-import { useEffect, useState } from "react";
-import { useAtom } from "jotai";
-import { deviceTabAtom } from "@/features/list/atoms/deviceTabAtom";
+import { useState } from "react";
 
-export function useActiveTab(defaultTab?: "mobile") {
-	const [deviceTab, setDeviceTab] = useAtom(deviceTabAtom);
+// サーバー側で UA から決まる defaultTab を初期値として受け取る。
+// Mac UA など曖昧な場合は undefined のまま CSS pointer media query に委ねる。
+// ユーザーがタブをクリックした場合のみ activeTab が確定する。
+export function useActiveTab(defaultTab?: "mobile" | "pc") {
 	const [activeTab, setActiveTab] = useState<"pc" | "mobile" | undefined>(
-		defaultTab ?? deviceTab,
+		defaultTab,
 	);
-
-	useEffect(() => {
-		if (defaultTab !== undefined || deviceTab !== undefined) return;
-		const ua = navigator.userAgent;
-		const isTouchDevice =
-			"ontouchstart" in window || navigator.maxTouchPoints > 0;
-		// iPad でアクセスするとユーザーエージェント上は Mac になる。
-		const isMac = /Macintosh|MacIntel|MacPPC|Mac68K/i.test(ua);
-		// iPad ユーザーなら iPad で映画を観るはず。
-		// UI最適化のため、Mac かつタッチデバイスならモバイルデバイスと判定する。
-		const isMobileUA =
-			/Android|iPhone|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua);
-
-		if (!isMobileUA && (!isTouchDevice || !isMac)) {
-			setDeviceTab("pc");
-			setActiveTab("pc");
-		} else {
-			setDeviceTab("mobile");
-			setActiveTab("mobile");
-		}
-	}, [defaultTab, deviceTab, setDeviceTab]);
-
-	return { activeTab, setActiveTab, deviceTab };
+	return { activeTab, setActiveTab };
 }
