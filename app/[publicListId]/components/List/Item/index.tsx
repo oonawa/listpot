@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
-import { formatRelativeDate, formatFullDate } from "@/lib/date";
 import type { ListItem } from "@/features/list/types/ListItem";
 import type { SortKey } from "@/features/list/helpers/sortListItems";
+import { formatDateLabel } from "@/features/list/helpers/formatDateLabel";
 import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 import CheckMarkIcon from "@/components/ui/Icons/CheckMarkIcon";
 import SubListSelectDrawer from "@/app/components/SubListSelectDrawer/SubListSelectDrawer";
@@ -40,27 +40,6 @@ type GuestProps = {
 };
 
 type Props = LoggedInProps | GuestProps;
-
-const formatDateLabel = (
-	movie: ListItem,
-	sortKey: SortKey | undefined,
-): string => {
-	if (sortKey === "releaseDate") {
-		if (movie.details?.releaseDate) {
-			return formatFullDate(new Date(movie.details.releaseDate));
-		}
-		return `${movie.details?.releaseYear ?? ""}年`;
-	}
-
-	if (sortKey === "runningMinutes") {
-		if (movie.details?.runningMinutes !== undefined) {
-			return `${movie.details.runningMinutes}分`;
-		}
-		return "";
-	}
-
-	return `${formatRelativeDate(movie.createdAt)}に追加`;
-};
 
 export default function Item(props: Props) {
 	const { movie, isLoggedIn, mainListPublicId, sortKey, index } = props;

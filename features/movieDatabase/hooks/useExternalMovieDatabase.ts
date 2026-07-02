@@ -102,6 +102,7 @@ export const useExternalMovieDatabase = ({ movie }: Props) => {
 					posterImage: TMDB_IMAGE_BASE_URL + poster_path,
 					runningMinutes: runtime,
 					releaseYear: new Date(release_date).getFullYear(),
+					releaseDate: release_date,
 					director: directorsInfo.data,
 					externalDatabaseMovieId: externalApiMovieId,
 					overview,
