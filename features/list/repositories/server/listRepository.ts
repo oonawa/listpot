@@ -345,17 +345,67 @@ export async function findMovieDirectorNames(movieIds: number[]) {
 		.where(inArray(movieDirectorsTable.movieId, movieIds));
 }
 
-export async function listItemPublicIdsByListId(
+export async function rouletteListItemsByListId(
 	listId: number,
 	userId: number,
-): Promise<string[]> {
+): Promise<{ listItemId: string; isWatched: boolean }[]> {
 	const rows = await db
-		.select({ listItemId: listItemsTable.publicId })
+		.select({
+			listItemId: listItemsTable.publicId,
+			watchedAt: watchedItemsTable.watchedAt,
+		})
 		.from(listItemsTable)
 		.innerJoin(listsTable, eq(listItemsTable.listId, listsTable.id))
+		.leftJoin(
+			watchedItemsTable,
+			eq(watchedItemsTable.listItemId, listItemsTable.id),
+		)
 		.where(and(eq(listsTable.id, listId), eq(listsTable.userId, userId)));
 
-	return rows.map((row) => row.listItemId);
+	return rows.map((row) => ({
+		listItemId: row.listItemId,
+		isWatched: row.watchedAt !== null,
+	}));
+}
+
+export async function rouletteSubListsByListId(
+	listId: number,
+): Promise<{ subListId: string; name: string; listItemIds: string[] }[]> {
+	const rows = await db
+		.select({
+			subListId: subListsTable.publicId,
+			name: subListsTable.name,
+			listItemId: listItemsTable.publicId,
+		})
+		.from(subListsTable)
+		.leftJoin(
+			subListItemsTable,
+			eq(subListItemsTable.subListId, subListsTable.id),
+		)
+		.leftJoin(
+			listItemsTable,
+			eq(subListItemsTable.listItemId, listItemsTable.id),
+		)
+		.where(eq(subListsTable.listId, listId))
+		.orderBy(subListsTable.id);
+
+	const map = new Map<
+		string,
+		{ subListId: string; name: string; listItemIds: string[] }
+	>();
+
+	for (const row of rows) {
+		let entry = map.get(row.subListId);
+		if (!entry) {
+			entry = { subListId: row.subListId, name: row.name, listItemIds: [] };
+			map.set(row.subListId, entry);
+		}
+		if (row.listItemId !== null) {
+			entry.listItemIds.push(row.listItemId);
+		}
+	}
+
+	return Array.from(map.values());
 }
 
 export async function findListItemRowByPublicId(

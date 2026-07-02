@@ -5,11 +5,11 @@ import dynamic from "next/dynamic";
 import { AnimatePresence, useAnimate } from "motion/react";
 import type { ListItem } from "@/features/list/types/ListItem";
 import { getListItemById } from "@/features/list/actions/getListItemById";
-import { getRouletteListItemIdsBySubList } from "@/features/list/actions/getRouletteListItemIdsBySubList";
 import { useServerAction } from "@/features/shared/hooks/useServerAction";
 import { useListLocalStorageRepository } from "@/features/list/hooks/useListLocalStorageRepository";
 import RisuPot from "@/components/RisuPot";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
 	Select,
 	SelectContent,
@@ -23,16 +23,17 @@ const SelectedItem = dynamic(() => import("./SelectedItem"));
 
 const ALL_ITEMS_VALUE = "all" as const;
 
-type SubList = { publicId: string; name: string };
+type RouletteItem = { listItemId: string; isWatched: boolean };
+type SubList = { subListId: string; name: string; listItemIds: string[] };
 
 type Props = {
-	listItemIds?: string[];
+	items?: RouletteItem[];
 	subLists?: SubList[];
 };
 
 const MIN_ITEMS_REQUIRED = 2 as const;
 
-export default function RouletteContent({ listItemIds, subLists }: Props) {
+export default function RouletteContent({ items, subLists }: Props) {
 	const { getListItems, getSubLists } = useListLocalStorageRepository();
 	const { execute, networkError } = useServerAction();
 
@@ -43,65 +44,58 @@ export default function RouletteContent({ listItemIds, subLists }: Props) {
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [selectedSubListId, setSelectedSubListId] =
 		useState<string>(ALL_ITEMS_VALUE);
+	const [includeWatched, setIncludeWatched] = useState(true);
 	const [potScope, animatePot] = useAnimate();
 
-	const localItems = listItemIds ? [] : getListItems();
-	const localSubLists = subLists ? [] : getSubLists();
-	const allSubLists: SubList[] =
-		subLists ??
-		localSubLists.map((s) => ({ publicId: s.subListId, name: s.name }));
+	const isLoginUser = items !== undefined;
+	const localItems = isLoginUser ? [] : getListItems();
+	const allItems: RouletteItem[] =
+		items ??
+		localItems.map((i) => ({ listItemId: i.listItemId, isWatched: i.isWatched }));
+	const allSubLists: SubList[] = subLists ?? (isLoginUser ? [] : getSubLists());
 
-	const getIds = (): string[] => {
+	const getPool = (): string[] => {
+		let filtered = allItems;
+
 		if (selectedSubListId !== ALL_ITEMS_VALUE) {
-			const localSub = localSubLists.find(
+			const subList = allSubLists.find(
 				(s) => s.subListId === selectedSubListId,
 			);
-			if (localSub) return localSub.listItemIds;
+			const idSet = new Set(subList?.listItemIds ?? []);
+			filtered = filtered.filter((i) => idSet.has(i.listItemId));
 		}
-		return listItemIds ?? localItems.map((i) => i.listItemId);
+
+		if (!includeWatched) {
+			filtered = filtered.filter((i) => !i.isWatched);
+		}
+
+		return filtered.map((i) => i.listItemId);
 	};
 
-	const ids = getIds();
+	const pool = getPool();
+
+	const resetResult = () => {
+		setIsLacking(false);
+		setIsDisabled(false);
+		setSelectedItem(null);
+	};
 
 	const getRandomItem = () => {
 		if (isAnimating) {
 			return;
 		}
 
-		// ゲストまたは「すべて」選択時は同期チェック可能
-		const isLoginUserWithSubList =
-			listItemIds !== undefined && selectedSubListId !== ALL_ITEMS_VALUE;
-
-		if (!isLoginUserWithSubList && ids.length < MIN_ITEMS_REQUIRED) {
-			setLackingCount(MIN_ITEMS_REQUIRED - ids.length);
+		if (pool.length < MIN_ITEMS_REQUIRED) {
+			setLackingCount(MIN_ITEMS_REQUIRED - pool.length);
 			return setIsLacking(true);
 		}
 
 		setIsAnimating(true);
 
 		execute(async () => {
-			// ログインユーザーがサブリストを選択している場合はサーバーからIDを取得
-			let pool: string[];
-			if (isLoginUserWithSubList) {
-				const result = await getRouletteListItemIdsBySubList(selectedSubListId);
-				if (!result.success) {
-					setIsAnimating(false);
-					return;
-				}
-				pool = result.data;
-				if (pool.length < MIN_ITEMS_REQUIRED) {
-					setIsAnimating(false);
-					setLackingCount(MIN_ITEMS_REQUIRED - pool.length);
-					setIsLacking(true);
-					return;
-				}
-			} else {
-				pool = ids;
-			}
-
 			const randomId = pool[Math.floor(Math.random() * pool.length)];
 
-			const itemPromise: Promise<ListItem | null> = listItemIds
+			const itemPromise: Promise<ListItem | null> = isLoginUser
 				? getListItemById(randomId).then((r) => (r.success ? r.data : null))
 				: Promise.resolve(
 						localItems.find((i) => i.listItemId === randomId) ?? null,
@@ -141,15 +135,27 @@ export default function RouletteContent({ listItemIds, subLists }: Props) {
 
 	return (
 		<>
-			{allSubLists.length > 0 && (
-				<div className="w-full flex justify-end">
+			<div className="w-full flex items-center justify-end gap-4">
+				<label
+					htmlFor="include-watched"
+					className="flex items-center gap-2 text-sm cursor-pointer"
+				>
+					<span>視聴済みを含む</span>
+					<Switch
+						id="include-watched"
+						checked={includeWatched}
+						onCheckedChange={(checked) => {
+							setIncludeWatched(checked);
+							resetResult();
+						}}
+					/>
+				</label>
+				{allSubLists.length > 0 && (
 					<Select
 						value={selectedSubListId}
 						onValueChange={(value) => {
 							setSelectedSubListId(value);
-							setIsLacking(false);
-							setIsDisabled(false);
-							setSelectedItem(null);
+							resetResult();
 						}}
 					>
 						<SelectTrigger className="border-background-light-2 overflow-hidden *:data-[slot=select-value]:inline-block *:data-[slot=select-value]:truncate">
@@ -162,14 +168,14 @@ export default function RouletteContent({ listItemIds, subLists }: Props) {
 						>
 							<SelectItem value={ALL_ITEMS_VALUE}>すべて</SelectItem>
 							{allSubLists.map((s) => (
-								<SelectItem key={s.publicId} value={s.publicId}>
+								<SelectItem key={s.subListId} value={s.subListId}>
 									{s.name}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
-				</div>
-			)}
+				)}
+			</div>
 			<div className="pt-2">
 				<Button
 					variant={"outline"}

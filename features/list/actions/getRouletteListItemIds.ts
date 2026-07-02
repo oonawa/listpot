@@ -5,14 +5,20 @@ import type { Result } from "@/features/shared/types/Result";
 import { currentUserId } from "@/features/shared/actions/currentUserId";
 import {
 	userListId,
-	listItemPublicIdsByListId,
+	rouletteListItemsByListId,
+	rouletteSubListsByListId,
 } from "../repositories/server/listRepository";
 
 const schema = z.object({ publicListId: z.string().uuid() });
 
+export type RouletteData = {
+	items: { listItemId: string; isWatched: boolean }[];
+	subLists: { subListId: string; name: string; listItemIds: string[] }[];
+};
+
 export async function getRouletteListItemIds(
 	publicListId: string,
-): Promise<Result<string[]>> {
+): Promise<Result<RouletteData>> {
 	const parsed = schema.safeParse({ publicListId });
 
 	if (!parsed.success) {
@@ -34,7 +40,10 @@ export async function getRouletteListItemIds(
 		};
 	}
 
-	const listId = await userListId(userResult.data.userId, parsed.data.publicListId);
+	const listId = await userListId(
+		userResult.data.userId,
+		parsed.data.publicListId,
+	);
 
 	if (!listId) {
 		return {
@@ -46,7 +55,10 @@ export async function getRouletteListItemIds(
 		};
 	}
 
-	const ids = await listItemPublicIdsByListId(listId, userResult.data.userId);
+	const [items, subLists] = await Promise.all([
+		rouletteListItemsByListId(listId, userResult.data.userId),
+		rouletteSubListsByListId(listId),
+	]);
 
-	return { success: true, data: ids };
+	return { success: true, data: { items, subLists } };
 }
