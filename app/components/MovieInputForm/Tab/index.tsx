@@ -11,7 +11,7 @@ type Props = {
 };
 
 const POINTER_ACTIVE_CLASS: Record<PointerActive, string> = {
-	fine: "pointer-fine:border-background-light-1",
+	fine: "pointer-fine:border-background-light-2",
 	coarse: "pointer-coarse:border-background-light-1",
 };
 
@@ -22,7 +22,7 @@ export default function Tab({
 	pointerActive,
 }: Props) {
 	const baseBorder = isActive
-		? "border-background-light-1"
+		? "border-background-light-3"
 		: "border-background hover:border-background-light-2";
 	const pointerClass =
 		!isActive && pointerActive ? POINTER_ACTIVE_CLASS[pointerActive] : "";

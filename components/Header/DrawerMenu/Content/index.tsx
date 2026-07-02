@@ -34,8 +34,8 @@ export default function DrawerMenuContent({ email }: Props) {
 	return (
 		<Drawer>
 			<DrawerTrigger asChild>
-				<Button className="has-[>svg]:p-0 aspect-square h-full border border-background-light-1 rounded-full cursor-pointer hover:bg-background-light-1">
-					<PersonIcon className="size-4 text-foreground-dark-2" />
+				<Button className="has-[>svg]:p-0 aspect-square size-8 border border-background-light-2 rounded-full cursor-pointer hover:bg-background-light-1">
+					<PersonIcon className="size-4 text-foreground-dark-1" />
 				</Button>
 			</DrawerTrigger>
 

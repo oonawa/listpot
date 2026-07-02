@@ -1,4 +1,3 @@
-import { formatFullDate } from "@/lib/date";
 import { withTmdbImageSize } from "@/features/movieDatabase/helpers/withTmdbImageSize";
 
 type Props = {
@@ -8,7 +7,6 @@ type Props = {
 	director: string[];
 	runningMinutes: number;
 	releaseYear: number;
-	releaseDate?: string;
 };
 
 export default function MovieDetail({
@@ -16,17 +14,9 @@ export default function MovieDetail({
 	posterImage,
 	director,
 	releaseYear,
-	releaseDate,
 	runningMinutes,
 	backgroundImage,
 }: Props) {
-	const releaseDateLabel = (() => {
-		if (releaseDate) {
-			return formatFullDate(new Date(releaseDate));
-		}
-		return `${releaseYear}年`;
-	})();
-
 	return (
 		<div className="relative h-full">
 			<div className="absolute w-full h-full top-0 bg-background-dark-1/85 rounded-2xl">
@@ -58,7 +48,7 @@ export default function MovieDetail({
 									<span className="block text-xs text-foreground-dark-3">
 										公開
 									</span>
-									{releaseDateLabel}
+									{releaseYear}年
 								</p>
 								<p className="font-bold text-foreground-dark-1 text-xs pt-1">
 									<span className="block text-xs text-foreground-dark-3">

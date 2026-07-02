@@ -27,7 +27,6 @@ export default function Content({
 						backgroundImage={movie.details.backgroundImage}
 						director={movie.details.director}
 						releaseYear={movie.details.releaseYear}
-						releaseDate={movie.details.releaseDate}
 						runningMinutes={movie.details.runningMinutes}
 					/>
 				) : (
