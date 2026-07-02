@@ -16,17 +16,17 @@ export default function SelectedItem({ selectedItem, handleClick }: Props) {
 			animate={{ height: "auto", opacity: 1 }}
 			exit={{ height: 0, opacity: 0 }}
 			transition={{ duration: 0.3, ease: "easeInOut" }}
-			className="w-full max-w-lg overflow-hidden"
+			className="w-full overflow-hidden"
 		>
-			<div className="pt-6 pb-4 w-full">
+			<div className="py-4">
 				<DrawnListItem movie={selectedItem} />
 			</div>
-			<div className="border-t border-background-light-2 pt-10 pb-6">
+			<div className="border-background-light-2">
 				<Button
 					onClick={handleClick}
-					className="w-full cursor-pointer border border-background-light-1 text-foreground-dark-1 bg-background-light-1 hover:bg-background-light-2 hover:text-foreground transition-colors"
+					className="h-auto text-base w-full cursor-pointer border-2 border-background-light-1 text-foreground-dark-3 hover:bg-background-light-1 hover:border-background-light-2 hover:text-foreground transition-colors"
 				>
-					<span className="font-bold">もういちど</span>
+					<span className="font-bold">選びなおす</span>
 				</Button>
 			</div>
 		</motion.div>

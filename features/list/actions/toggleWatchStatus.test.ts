@@ -209,7 +209,9 @@ describe("toggleWatchStatus", () => {
 	});
 
 	describe("所有権チェック（IDOR対策）", () => {
-		const buildMockListItem = (overrides?: Partial<ListItem>): ListItem => ({
+		const buildMockListItem = (
+			overrides?: Partial<Omit<ListItem, "isWatched" | "watchedAt">>,
+		): ListItem => ({
 			listItemId: testListItemPublicId,
 			title: "テスト映画",
 			url: "https://www.netflix.com/jp/title/80100172",
