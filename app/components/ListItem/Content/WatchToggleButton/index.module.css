@@ -1,22 +1,3 @@
-.springTransition {
-	transition: background-color 1s linear(0, 0.009, 0.035 2.1%, 0.141, 0.309, 0.52, 0.733, 0.891, 0.963, 0.993 16.4%, 1.001 19.3%, 1.004, 1.004, 1.003, 1.001 25.4%, 1 27.3%, 0.999 32.7%, 1 38.7%, 1);
-}
-
-.circle {
-	transition: all 1s linear(0, 0.009, 0.035 2.1%, 0.141, 0.309, 0.52, 0.733, 0.891, 0.963, 0.993 16.4%, 1.001 19.3%, 1.004, 1.004, 1.003, 1.001 25.4%, 1 27.3%, 0.999 32.7%, 1 38.7%, 1);
-}
-
-@keyframes watch-toggle-check-in {
-	from {
-		opacity: 0;
-		transform: rotate(-45deg) scale(1);
-	}
-	to {
-		opacity: 1;
-		transform: rotate(0deg) scale(1);
-	}
-}
-
 /* テキストラベルの横幅アニメーション
  * max-width 方式。テキストが変わっても同一要素なので max-width でトランジションする。
  * 「もう観た？」= 5文字 × 約14px ≈ 5rem が上限として十分。
@@ -33,9 +14,4 @@
 .label[data-watched="true"] {
 	/* 「観た！」は短いので縮む */
 	max-width: 3rem;
-}
-
-/* タップ時の視覚フィードバック */
-.button:active {
-	background-color: var(--color-background-light-1);
 }

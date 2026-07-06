@@ -8,9 +8,10 @@ import {
 	subListItemsTable,
 	subListsTable,
 	usersTable,
+	watchedItemsTable,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getRouletteListItemIdsBySubList } from "./getRouletteListItemIdsBySubList";
+import { getRouletteListItemIds } from "./getRouletteListItemIds";
 
 const { mockCurrentUserId } = vi.hoisted(() => ({
 	mockCurrentUserId: vi.fn(),
@@ -29,12 +30,13 @@ async function findStreamingServiceIdBySlug(slug: "netflix") {
 	return row.id;
 }
 
-describe("getRouletteListItemIdsBySubList", () => {
+describe("getRouletteListItemIds", () => {
 	let userId = 0;
+	let publicListId = "";
 	let listId = 0;
-	let subListPublicId = "";
 	let listItemPublicId1 = "";
 	let listItemPublicId2 = "";
+	let subListPublicId = "";
 
 	beforeEach(async () => {
 		await db.delete(listItemsTable);
@@ -43,14 +45,15 @@ describe("getRouletteListItemIdsBySubList", () => {
 
 		const [user] = await db
 			.insert(usersTable)
-			.values({ publicId: "get-roulette-list-item-ids-by-sub-list-user" })
+			.values({ publicId: "get-roulette-list-item-ids-user" })
 			.returning({ id: usersTable.id });
 
 		userId = user.id;
 
+		publicListId = crypto.randomUUID();
 		const [list] = await db
 			.insert(listsTable)
-			.values({ publicId: crypto.randomUUID(), userId })
+			.values({ publicId: publicListId, userId })
 			.returning({ id: listsTable.id });
 
 		listId = list.id;
@@ -83,6 +86,12 @@ describe("getRouletteListItemIdsBySubList", () => {
 			})
 			.returning({ id: listItemsTable.id });
 
+		// item2 のみ視聴済み
+		await db.insert(watchedItemsTable).values({
+			listItemId: item2.id,
+			watchedAt: new Date(),
+		});
+
 		subListPublicId = crypto.randomUUID();
 		const [subList] = await db
 			.insert(subListsTable)
@@ -94,62 +103,72 @@ describe("getRouletteListItemIdsBySubList", () => {
 			})
 			.returning({ id: subListsTable.id });
 
-		await db.insert(subListItemsTable).values([
-			{ subListId: subList.id, listItemId: item1.id },
-			{ subListId: subList.id, listItemId: item2.id },
-		]);
+		await db
+			.insert(subListItemsTable)
+			.values({ subListId: subList.id, listItemId: item1.id });
 	});
 
-	it("自身のサブリストのアイテムpublicId配列を返す", async () => {
+	it("視聴状態付きのアイテムとサブリストを返す", async () => {
 		mockCurrentUserId.mockResolvedValue({ success: true, data: { userId } });
 
-		const result = await getRouletteListItemIdsBySubList(subListPublicId);
+		const result = await getRouletteListItemIds(publicListId);
 
 		expect(result.success).toBe(true);
 		if (!result.success) return;
-		expect(result.data).toHaveLength(2);
-		expect(result.data).toContain(listItemPublicId1);
-		expect(result.data).toContain(listItemPublicId2);
+
+		expect(result.data.items).toHaveLength(2);
+		expect(result.data.items).toEqual(
+			expect.arrayContaining([
+				{ listItemId: listItemPublicId1, isWatched: false },
+				{ listItemId: listItemPublicId2, isWatched: true },
+			]),
+		);
+
+		expect(result.data.subLists).toEqual([
+			{
+				subListId: subListPublicId,
+				name: "テストサブリスト",
+				listItemIds: [listItemPublicId1],
+			},
+		]);
 	});
 
-	it("存在しないサブリストでは NOT_FOUND_ERROR を返す", async () => {
+	it("存在しないリストでは NOT_FOUND_ERROR を返す", async () => {
 		mockCurrentUserId.mockResolvedValue({ success: true, data: { userId } });
 
-		const result = await getRouletteListItemIdsBySubList(crypto.randomUUID());
+		const result = await getRouletteListItemIds(crypto.randomUUID());
 
 		expect(result).toEqual({
 			success: false,
-			error: { code: "NOT_FOUND_ERROR", message: "サブリストが見つかりませんでした。" },
+			error: {
+				code: "NOT_FOUND_ERROR",
+				message: "リストが見つかりませんでした。",
+			},
 		});
 	});
 
-	it("他ユーザーのサブリストでは NOT_FOUND_ERROR を返す", async () => {
-		const [otherUser] = await db
-			.insert(usersTable)
-			.values({ publicId: "other-user" })
-			.returning({ id: usersTable.id });
+	it("不正なリクエストでは VALIDATION_ERROR を返す", async () => {
+		mockCurrentUserId.mockResolvedValue({ success: true, data: { userId } });
 
-		mockCurrentUserId.mockResolvedValue({
-			success: true,
-			data: { userId: otherUser.id },
-		});
-
-		const result = await getRouletteListItemIdsBySubList(subListPublicId);
+		const result = await getRouletteListItemIds("not-a-uuid");
 
 		expect(result).toEqual({
 			success: false,
-			error: { code: "NOT_FOUND_ERROR", message: "サブリストが見つかりませんでした。" },
+			error: { code: "VALIDATION_ERROR", message: "不正なリクエストです。" },
 		});
 	});
 
 	it("未認証ユーザーは UNAUTHORIZED_ERROR を返す", async () => {
 		mockCurrentUserId.mockResolvedValue({ success: false });
 
-		const result = await getRouletteListItemIdsBySubList(subListPublicId);
+		const result = await getRouletteListItemIds(publicListId);
 
 		expect(result).toEqual({
 			success: false,
-			error: { code: "UNAUTHORIZED_ERROR", message: "ログインかユーザー登録をしてください。" },
+			error: {
+				code: "UNAUTHORIZED_ERROR",
+				message: "ログインかユーザー登録をしてください。",
+			},
 		});
 	});
 });
