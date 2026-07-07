@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { eq } from "drizzle-orm";
 import { subListsTable, listsTable } from "@/db/schema";
 import { setupAuthenticatedUser } from "../../../helpers/auth";

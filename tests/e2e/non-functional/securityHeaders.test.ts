@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures";
 
 // Issue #312 HIGH: セキュリティヘッダ未設定の再現テスト。
 // next.config.ts または middleware で主要ヘッダを付与するまで失敗する。

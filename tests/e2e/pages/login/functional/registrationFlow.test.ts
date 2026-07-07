@@ -1,10 +1,9 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 import { extractLoginCode } from "../../../helpers/resendLocal";
 
 const TEST_USER_ID = "testuser_reg";
-const BASE_URL = "http://localhost:3001";
 
 test.describe("新規登録フロー - 機能テスト", () => {
 	test.beforeEach(async ({ context }) => {
@@ -20,7 +19,7 @@ test.describe("新規登録フロー - 機能テスト", () => {
 		// デバイス・実行ごとに一意のメールアドレスを使い、resend-localの蓄積メールと混同しない
 		const testEmail = `newuser-${crypto.randomUUID()}@example.com`;
 
-		await page.goto(`${BASE_URL}/login`);
+		await page.goto("/login");
 
 		// 未登録メールを入力して送信
 		await page.locator("#email").fill(testEmail);
@@ -37,7 +36,7 @@ test.describe("新規登録フロー - 機能テスト", () => {
 		await page.getByRole("button", { name: "確認" }).click();
 
 		// /register に遷移する
-		await expect(page).toHaveURL(`${BASE_URL}/register`, { timeout: 10_000 });
+		await expect(page).toHaveURL(`/register`, { timeout: 10_000 });
 
 		// ユーザーID入力
 		await page.locator("#userId").fill(TEST_USER_ID);
@@ -50,6 +49,6 @@ test.describe("新規登録フロー - 機能テスト", () => {
 		await page.getByRole("button", { name: "登録" }).click();
 
 		// ホームページへ遷移する
-		await expect(page).toHaveURL(`${BASE_URL}/`, { timeout: 15_000 });
+		await expect(page).toHaveURL(`/`, { timeout: 15_000 });
 	});
 });

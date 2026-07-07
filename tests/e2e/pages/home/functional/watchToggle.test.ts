@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import {
 	listItemsTable,
 	listsTable,
@@ -283,7 +283,7 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	}, testInfo) => {
 		test.skip(testInfo.project.name !== "mobile-webkit", "mobile-webkitのみ対象");
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		const { list } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
@@ -302,7 +302,7 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	}, testInfo) => {
 		test.skip(testInfo.project.name !== "mobile-chromium", "mobile-chromiumのみ対象");
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		const { list } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
@@ -321,7 +321,7 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	}, testInfo) => {
 		test.skip(testInfo.project.name !== "desktop-chromium", "desktop-chromiumのみ対象");
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		const { list } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
@@ -340,7 +340,7 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	}, testInfo) => {
 		test.skip(testInfo.project.name !== "desktop-firefox", "desktop-firefoxのみ対象");
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		const { list } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
@@ -359,7 +359,7 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	}, testInfo) => {
 		test.skip(testInfo.project.name !== "desktop-webkit", "desktop-webkitのみ対象");
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		const { list } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);

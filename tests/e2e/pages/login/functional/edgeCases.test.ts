@@ -1,7 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 
-const BASE_URL = "http://localhost:3001";
 
 test.describe("ログインフロー - エッジケース", () => {
 	test.beforeEach(async ({ context }) => {
@@ -13,7 +12,7 @@ test.describe("ログインフロー - エッジケース", () => {
 	test("メールアドレス未入力のまま送信ボタンを押すとバリデーションエラーが表示される", async ({
 		page,
 	}) => {
-		await page.goto(`${BASE_URL}/login`);
+		await page.goto("/login");
 
 		// 送信ボタンは disabled なのでクリックできないことを確認
 		const sendButton = page.getByRole("button", { name: "送信" });

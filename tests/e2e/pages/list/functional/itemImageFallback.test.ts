@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 
 test.describe("Item 画像条件付きレンダリング", () => {

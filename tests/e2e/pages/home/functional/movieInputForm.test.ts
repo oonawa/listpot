@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { eq } from "drizzle-orm";
 import {
 	listItemsTable,
@@ -102,7 +102,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 			"このテストは mobile-webkit プロジェクトのみ対象",
 		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		await page.goto("/");
 		await fillMobileFormAndVerify(page);
 	});
@@ -129,7 +129,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		await page.goto("/");
 		await fillPcFormAndVerify(page);
 	});
@@ -154,7 +154,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 			"このテストは desktop-firefox プロジェクトのみ対象",
 		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		await page.goto("/");
 		await fillPcFormAndVerify(page);
 	});
@@ -179,7 +179,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 			"このテストは desktop-webkit プロジェクトのみ対象",
 		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		await page.goto("/");
 		await fillPcFormAndVerify(page);
 	});
@@ -247,7 +247,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			userAgent,
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		await seedUnextListItem(userId);
 
@@ -276,7 +276,7 @@ test.describe("MovieInputForm - 機能テスト", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			userAgent,
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		await seedUnextListItem(userId);
 

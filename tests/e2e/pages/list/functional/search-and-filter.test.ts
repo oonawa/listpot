@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { eq } from "drizzle-orm";
 import {
 	listItemsTable,
@@ -131,7 +131,7 @@ test.describe("検索・フィルター - 検索バー（キーワード絞り�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -185,7 +185,7 @@ test.describe("検索・フィルター - クリアボタンでキーワード�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -200,7 +200,7 @@ test.describe("検索・フィルター - クリアボタンでキーワード�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -314,7 +314,7 @@ test.describe("検索・フィルター - 入力から 200ms 後に表示が切�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -346,7 +346,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -365,7 +365,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -382,7 +382,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -402,7 +402,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -461,7 +461,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -474,7 +474,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -492,7 +492,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -508,7 +508,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -533,7 +533,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
@@ -551,7 +551,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import {
 	listItemsTable,
 	listsTable,
@@ -97,7 +97,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		await createDbItems(userId, 2);
 
@@ -119,7 +119,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		const { list, items } = await createDbItems(userId, 2);
 		await createDbSubList(
@@ -148,7 +148,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		const { list, items } = await createDbItems(userId, 2);
 		await createDbSubList(
@@ -177,7 +177,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		const { list, items } = await createDbItems(userId, 3);
 		await createDbSubList(
@@ -211,7 +211,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		const { list, items } = await createDbItems(userId, 3);
 		await createDbSubList(list.id, "1件のみ", [items[0].id]);
@@ -239,7 +239,7 @@ test.describe("ルーレット - サブリスト選択", () => {
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "test-user-agent",
-			testInfo.project.use.baseURL ?? "",
+			workerBaseUrl,
 		);
 		const { list } = await createDbItems(userId, 3);
 		await createDbSubList(list.id, "空のサブリスト", []);
