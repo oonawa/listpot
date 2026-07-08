@@ -44,7 +44,7 @@ async function fillMobileFormAndVerify(page: Page) {
 	await expect(page.getByRole("heading", { name: MOVIE_TITLE })).toBeVisible({
 		timeout: 5000,
 	});
-	await expect(page.getByText("U-NEXT")).toBeVisible();
+	await expect(page.getByAltText("U-NEXT")).toBeVisible();
 }
 
 // PC フォーム：タイトルと URL を入力して DraftNewItem パネルを検証
@@ -56,7 +56,7 @@ async function fillPcFormAndVerify(page: Page) {
 	await expect(page.getByRole("heading", { name: MOVIE_TITLE })).toBeVisible({
 		timeout: 5000,
 	});
-	await expect(page.getByText("U-NEXT")).toBeVisible();
+	await expect(page.getByAltText("U-NEXT")).toBeVisible();
 }
 
 test.describe("MovieInputForm - 機能テスト", () => {

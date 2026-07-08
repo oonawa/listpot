@@ -37,10 +37,8 @@ const meta = {
 		movie: movieWithDetails,
 		isSearchPending: false,
 		isSubmitPending: false,
-		isRemovePending: false,
 		handleSearch: () => {},
 		handleSubmit: () => {},
-		handleRemove: () => {},
 		handleCancel: () => {},
 	},
 	decorators: [
@@ -62,12 +60,6 @@ export const Default: Story = {
 export const SubmitPending: Story = {
 	args: {
 		isSubmitPending: true,
-	},
-};
-
-export const RemovePending: Story = {
-	args: {
-		isRemovePending: true,
 	},
 };
 

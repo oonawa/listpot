@@ -140,16 +140,13 @@ export default function RegisteredListItem({
 				movie={editingMovie}
 				isSearchPending={isSearchExternalMovieDatabasePending}
 				isSubmitPending={isSubmitPending}
-				isRemovePending={isRemovePending}
 				handleSearch={handleSearchDetail}
 				handleSubmit={handleSubmit}
-				handleRemove={handleRemove}
 				handleCancel={handleSelectCancel}
 				handleToggleWatch={editingHandleToggleWatch}
 				isTogglePending={isTogglePending}
 				storeSuccess={displaySuccess}
 				errorMessage={displayErrorMessage}
-				mainListPublicId={mainListPublicId}
 			/>
 		);
 	}

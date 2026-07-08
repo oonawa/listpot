@@ -2,7 +2,6 @@
 
 import type { DraftListItem } from "@/features/list/types/ListItem";
 import Content from "../Content";
-import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
 import SubmitButton from "../Content/SubmitButton";
 import StoreSuccess from "../Content/Result/Success";
@@ -38,9 +37,8 @@ export default function NewListItem({
 			movie={movie}
 			isSearchPending={isSearchPending}
 			onSearch={handleSearch}
+			isDetailView
 		>
-			<ServiceName serviceName={movie.serviceName} />
-
 			{storeSuccess === true && (
 				<FadeIn>
 					<StoreSuccess />
@@ -63,11 +61,15 @@ export default function NewListItem({
 						}
 					/>
 					{onWatchToggle && (
-						<WatchToggleButton
-							isWatched={movie.isWatched}
-							onToggle={onWatchToggle}
-							isPending={isWatchTogglePending}
-						/>
+						<div className="py-4">
+							<div className="bg-background-light-1 rounded-md py-4 flex justify-center">
+								<WatchToggleButton
+									isWatched={movie.isWatched}
+									onToggle={onWatchToggle}
+									isPending={isWatchTogglePending}
+								/>
+							</div>
+						</div>
 					)}
 				</>
 			)}

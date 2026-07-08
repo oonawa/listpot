@@ -17,7 +17,7 @@ async function fillPcFormAndWaitForDraftPanel(page: Page) {
 	await expect(page.getByRole("heading", { name: MOVIE_TITLE })).toBeVisible({
 		timeout: 5000,
 	});
-	await expect(page.getByText("U-NEXT")).toBeVisible();
+	await expect(page.getByAltText("U-NEXT")).toBeVisible();
 }
 
 // DraftNewItem パネルが表示された状態で登録ボタンをクリックし、StoreSuccess メッセージを検証

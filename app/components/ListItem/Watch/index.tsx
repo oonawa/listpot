@@ -3,11 +3,11 @@
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
 import { useAuth } from "@/features/auth/state/authAtom";
 import Content from "../Content";
-import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
 import SubMenu from "../Content/SubMenu";
 import WatchButton from "../Content/WatchButton";
 import Overview from "../Content/Overview";
+import MovieMeta from "../Content/MovieMeta";
 import WatchToggleButton from "../Content/WatchToggleButton";
 
 type SubList = {
@@ -48,9 +48,8 @@ export default function WatchListItem({
 			movie={movie}
 			isSearchPending={isSearchPending}
 			onSearch={handleSearch}
+			isDetailView
 		>
-			<ServiceName serviceName={movie.serviceName} />
-
 			<Menu
 				Button={<WatchButton url={movie.url} />}
 				SubMenu={
@@ -79,12 +78,26 @@ export default function WatchListItem({
 					)
 				}
 			/>
+
 			{movie.details && <Overview overview={movie.details.overview} />}
+
 			{handleToggleWatch && (
-				<WatchToggleButton
-					isWatched={optimisticIsWatched ?? movie.isWatched}
-					onToggle={handleToggleWatch}
-					isPending={isTogglePending}
+				<div className="py-4">
+					<div className="bg-background-light-1 rounded-md py-4 flex justify-center">
+						<WatchToggleButton
+						isWatched={optimisticIsWatched ?? movie.isWatched}
+						onToggle={handleToggleWatch}
+						isPending={isTogglePending}
+					/>
+					</div>
+				</div>
+			)}
+
+			{movie.details && (
+				<MovieMeta
+					director={movie.details.director}
+					releaseYear={movie.details.releaseYear}
+					runningMinutes={movie.details.runningMinutes}
 				/>
 			)}
 		</Content>

@@ -10,6 +10,7 @@ import CheckMarkIcon from "@/components/ui/Icons/CheckMarkIcon";
 import SubListSelectDrawer from "@/app/components/SubListSelectDrawer/SubListSelectDrawer";
 import LocalSubListSelectDrawer from "@/app/components/SubListSelectDrawer/LocalSubListSelectDrawer";
 import SearchButton from "./SearchButton";
+import ServiceLogo from "@/app/components/ListItem/Content/ServiceLogo";
 import MoreIcon from "@/components/ui/Icons/MoreIcon";
 import { Button } from "@/components/ui/button";
 import { listpotAtom } from "@/features/shared/store";
@@ -89,7 +90,7 @@ export default function Item(props: Props) {
 			)}
 			<div className="w-full h-full rounded-xl p-2 transition-colors hover:bg-background-light-1">
 				<div className="relative aspect-video bg-background-dark-1 rounded-xl overflow-hidden">
-					<div className="w-full h-full aspect-video absolute top-0 bg-background-dark-1/75">
+					<div className="w-full h-full aspect-video absolute top-0 bg-background-dark-1/65">
 						{movie.details ? (
 							<SearchButton
 								movie={movie}
@@ -125,14 +126,12 @@ export default function Item(props: Props) {
 						/>
 					)}
 				</div>
-				<div className="flex gap-2 w-full rounded-b-2x pt-4 sm:pt-2">
-					<div>
-						<span className="p-2 bg-background-dark-1 rounded-md font-bold text-foreground-dark-1 text-xs whitespace-nowrap">
-							{movie.serviceName}
-						</span>
+				<div className="flex gap-4 w-full rounded-b-2x pt-3 sm:pt-2">
+					<div className="flex h-auto pt-1">
+						<ServiceLogo serviceName={movie.serviceName} />
 					</div>
-					
-						<div className="flex flex-col gap-1">
+
+						<div className="flex flex-col gap-1.5">
 							<h2 className="text-sm font-bold line-clamp-2 min-w-0 w-full">
 								{movie.title}
 							</h2>
