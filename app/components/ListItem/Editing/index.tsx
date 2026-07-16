@@ -2,11 +2,8 @@
 
 import { AnimatePresence } from "motion/react";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
-import { useAuth } from "@/features/auth/state/authAtom";
 import Content from "../Content";
-import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
-import SubMenu from "../Content/SubMenu";
 import BackSearchResult from "../Content/BackSearchResult";
 import SubmitButton from "../Content/SubmitButton";
 import Overview from "../Content/Overview";
@@ -20,15 +17,12 @@ type Props = {
 	movie: DraftListItem | ListItem | null;
 	isSearchPending: boolean;
 	isSubmitPending: boolean;
-	isRemovePending: boolean;
 	handleSearch: () => void;
 	handleSubmit: () => void;
-	handleRemove: () => void;
 	handleCancel: () => void;
 	handleToggleWatch?: () => void;
 	isTogglePending?: boolean;
 	storeSuccess?: boolean;
-	mainListPublicId?: string;
 	errorMessage?: string;
 };
 
@@ -36,18 +30,14 @@ export default function EditingListItem({
 	movie,
 	isSearchPending,
 	isSubmitPending,
-	isRemovePending,
 	handleSearch,
 	handleSubmit,
-	handleRemove,
 	handleCancel,
 	handleToggleWatch,
 	isTogglePending,
 	storeSuccess,
-	mainListPublicId = "",
 	errorMessage,
 }: Props) {
-	const auth = useAuth();
 	return (
 		<AnimatePresence mode="wait">
 			{movie ? (
@@ -56,9 +46,8 @@ export default function EditingListItem({
 						movie={movie}
 						isSearchPending={isSearchPending}
 						onSearch={handleSearch}
+						isDetailView
 					>
-						<ServiceName serviceName={movie.serviceName} />
-
 						{storeSuccess === true && (
 							<FadeIn>
 								<StoreSuccess />
@@ -85,38 +74,17 @@ export default function EditingListItem({
 											onSubmit={handleSubmit}
 										/>
 									}
-									SubMenu={
-										auth.isLoggedIn ? (
-											<SubMenu
-												onSearch={handleSearch}
-												onRemove={handleRemove}
-												searchDisabled={isSearchPending}
-												removeDisabled={isRemovePending}
-												listItemId={movie && "listItemId" in movie ? movie.listItemId : ""}
-												mainListPublicId={mainListPublicId}
-												isLoggedIn={true}
-												subLists={[]}
-												checkedSubListIds={[]}
-											/>
-										) : (
-											<SubMenu
-												onSearch={handleSearch}
-												onRemove={handleRemove}
-												searchDisabled={isSearchPending}
-												removeDisabled={isRemovePending}
-												listItemId={movie && "listItemId" in movie ? movie.listItemId : ""}
-												mainListPublicId={mainListPublicId}
-												isLoggedIn={false}
-											/>
-										)
-									}
 								/>
 								{handleToggleWatch && (
-									<WatchToggleButton
-										isWatched={movie.isWatched}
-										onToggle={handleToggleWatch}
-										isPending={isTogglePending}
-									/>
+									<div className="py-4">
+										<div className="bg-background-light-1 rounded-md py-4 flex justify-center">
+											<WatchToggleButton
+												isWatched={movie.isWatched}
+												onToggle={handleToggleWatch}
+												isPending={isTogglePending}
+											/>
+										</div>
+									</div>
 								)}
 								{movie.details && (
 									<Overview overview={movie.details.overview} />

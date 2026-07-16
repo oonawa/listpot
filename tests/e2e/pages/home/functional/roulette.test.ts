@@ -314,4 +314,120 @@ test.describe("ルーレット - サブリスト選択", () => {
 			page.getByText(/ゲスト映画[12]/).first(),
 		).toBeVisible({ timeout: 10_000 });
 	});
+
+	// ケース8: ルーレット結果の視聴ボタンは「視聴する」、サービス名はロゴの alt で読み上げられる
+	test("ルーレット結果の視聴ボタンは「視聴する」でサービス名はロゴ alt から読める", async ({
+		page,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"このテストは mobile-webkit プロジェクトのみ対象",
+		);
+
+		const listId = crypto.randomUUID();
+		const item1Id = crypto.randomUUID();
+		const item2Id = crypto.randomUUID();
+
+		await seedLocalStorageViaInitScript(page, {
+			list: {
+				listId,
+				items: [
+					{
+						listItemId: item1Id,
+						title: "ゲスト映画1",
+						url: "https://www.netflix.com/jp/title/1",
+						serviceSlug: "netflix",
+						serviceName: "Netflix",
+						createdAt: new Date().toISOString(),
+						isWatched: false,
+						watchedAt: null,
+					},
+					{
+						listItemId: item2Id,
+						title: "ゲスト映画2",
+						url: "https://www.netflix.com/jp/title/2",
+						serviceSlug: "netflix",
+						serviceName: "Netflix",
+						createdAt: new Date().toISOString(),
+						isWatched: false,
+						watchedAt: null,
+					},
+				],
+			},
+			subLists: [],
+		});
+
+		await page.goto("/");
+
+		await page.getByRole("button", { name: "ランダムに選ぶ！" }).click();
+
+		await expect(
+			page.getByText(/ゲスト映画[12]/).first(),
+		).toBeVisible({ timeout: 10_000 });
+
+		// 視聴ボタンは「視聴する」で引け、サービス名はロゴの alt で読み上げられる
+		await expect(
+			page.getByRole("link", { name: "視聴する" }),
+		).toBeVisible();
+		await expect(page.getByAltText("Netflix")).toBeVisible();
+	});
+
+	// ケース9: ルーレット結果の背景タップで詳細モーダルが開く
+	test("ルーレット結果の背景をタップすると詳細モーダルが開く", async ({
+		page,
+	}, testInfo) => {
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"このテストは mobile-webkit プロジェクトのみ対象",
+		);
+
+		const listId = crypto.randomUUID();
+		const item1Id = crypto.randomUUID();
+		const item2Id = crypto.randomUUID();
+
+		await seedLocalStorageViaInitScript(page, {
+			list: {
+				listId,
+				items: [
+					{
+						listItemId: item1Id,
+						title: "ゲスト映画1",
+						url: "https://www.netflix.com/jp/title/1",
+						serviceSlug: "netflix",
+						serviceName: "Netflix",
+						createdAt: new Date().toISOString(),
+						isWatched: false,
+						watchedAt: null,
+					},
+					{
+						listItemId: item2Id,
+						title: "ゲスト映画2",
+						url: "https://www.netflix.com/jp/title/2",
+						serviceSlug: "netflix",
+						serviceName: "Netflix",
+						createdAt: new Date().toISOString(),
+						isWatched: false,
+						watchedAt: null,
+					},
+				],
+			},
+			subLists: [],
+		});
+
+		await page.goto("/");
+
+		await page.getByRole("button", { name: "ランダムに選ぶ！" }).click();
+
+		await expect(
+			page.getByText(/ゲスト映画[12]/).first(),
+		).toBeVisible({ timeout: 10_000 });
+
+		// 結果の背景（詳細を開くボタン）をタップ
+		await page
+			.getByRole("button", { name: /ゲスト映画[12]の詳細を開く/ })
+			.click();
+
+		// 詳細モーダル（WatchListItem）が開き「もう観た？」が表示される
+		await expect(page.getByText("もう観た？")).toBeVisible({ timeout: 5_000 });
+	});
 });

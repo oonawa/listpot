@@ -9,7 +9,7 @@ export default function BottomSheetContent({
 }: Props) {
 	return (
 		<div
-			className={`grow bg-background rounded-t-4xl overflow-y-auto border-t-2 border-x-2 border-background-light-1 ${withPadding ? " pt-4 px-4" : ""}`}
+			className={`grow pb-[10dvh] bg-background rounded-t-4xl overflow-y-auto border-t-2 border-x-2 border-background-light-3 ${withPadding ? " pt-4 px-4" : ""}`}
 		>
 			{children}
 		</div>

@@ -53,11 +53,14 @@ export default function SearchResult({
 									key={String(result.id)}
 									className="w-full aspect-video bg-background-dark-1 rounded-md"
 								>
-									<div className="absolute w-full grid grid-cols-7 rounded-md aspect-video bg-background-dark-1/90 p-4">
+									<div className="absolute w-full grid grid-cols-7 rounded-md aspect-video bg-background-dark-1/65 p-4">
 										<div className="col-start-1 col-end-3 w-full flex items-center">
 											<img
 												className="rounded-md"
-												src={withTmdbImageSize(TMDB_IMAGE_BASE_URL + result.poster_path, "w185")}
+												src={withTmdbImageSize(
+													TMDB_IMAGE_BASE_URL + result.poster_path,
+													"w185",
+												)}
 												alt=""
 												decoding="async"
 												{...(resultIndex >= 1 ? { loading: "lazy" } : {})}
@@ -72,7 +75,7 @@ export default function SearchResult({
 													{new Date(result.release_date).getFullYear()}年
 												</p>
 
-												<div className="text-foreground-dark-2 text-xs sm:text-sm pt-2 sm:pt-4">
+												<div className="text-foreground-dark-1 text-xs sm:text-sm pt-2 sm:pt-4">
 													<p className="line-clamp-3 sm:line-clamp-4 overflow-hidden">
 														{result.overview}
 													</p>
@@ -85,7 +88,7 @@ export default function SearchResult({
 													}}
 													variant={"outline"}
 													disabled={isSearchPending || isGetMoviePending}
-													className="text-xs py-1 rounded-full bg-transparent border-background-light-1 text-foreground-dark-2 font-bold cursor-pointer hover:bg-background-light-1/40 hover:text-foreground-dark-1"
+													className="text-xs py-1 rounded-full bg-background-light-1/50 border-foreground-dark-2 text-foreground-dark-2 font-bold cursor-pointer hover:bg-background-light-1/40 hover:text-foreground-dark-1"
 												>
 													これかも
 												</Button>
@@ -93,10 +96,13 @@ export default function SearchResult({
 										</div>
 									</div>
 
-									<div className="w-full aspect-video">
+									<div className="w-full aspect-video overflow-hidden rounded-md border border-background-light-3">
 										<img
-											className="object-contain w-full rounded-md"
-											src={withTmdbImageSize(TMDB_IMAGE_BASE_URL + result.backdrop_path, "w300")}
+											className="object-contain w-full"
+											src={withTmdbImageSize(
+												TMDB_IMAGE_BASE_URL + result.backdrop_path,
+												"w300",
+											)}
 											alt=""
 											decoding="async"
 											{...(resultIndex >= 1 ? { loading: "lazy" } : {})}

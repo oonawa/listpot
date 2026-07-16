@@ -3,7 +3,6 @@
 import { AnimatePresence } from "motion/react";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
 import Content from "../Content";
-import ServiceName from "../Content/ServiceName";
 import Menu from "../Content/Menu";
 import SubmitButton from "../Content/SubmitButton";
 import BackSearchResult from "../Content/BackSearchResult";
@@ -47,9 +46,8 @@ export default function PreviewListItem({
 						movie={movie}
 						isSearchPending={isSearchPending}
 						onSearch={handleSearch}
+						isDetailView
 					>
-						<ServiceName serviceName={movie.serviceName} />
-
 						{storeSuccess === true && (
 							<FadeIn>
 								<StoreSuccess />

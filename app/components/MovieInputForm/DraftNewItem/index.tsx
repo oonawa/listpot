@@ -14,7 +14,7 @@ export default function DraftNewItem({ draft }: Props) {
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -4 }}
 			transition={{ duration: 0.2, ease: "easeOut" }}
-			className="pt-4 px-4"
+			className="pt-4 px-4 pb-20"
 		>
 			<DraftListItemContainer draft={draft} />
 		</motion.div>

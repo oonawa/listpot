@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 
 test.describe("Item 画像条件付きレンダリング", () => {
-	test("details ありアイテムはカード配下に img が 2 個、details なしアイテムは 0 個", async ({
+	test("details ありアイテムはカード配下に img が 3 個、details なしアイテムは 1 個", async ({
 		page,
 		browserName,
 	}) => {
@@ -53,11 +53,11 @@ test.describe("Item 画像条件付きレンダリング", () => {
 		const cardA = page.locator(".first", { hasText: "映画A" });
 		const cardB = page.locator(".first", { hasText: "映画B" });
 
-		// 映画A（details あり）: img が 2 個（ポスター + 背景）
-		await expect(cardA.locator("img")).toHaveCount(2);
+		// 映画A（details あり）: img が 3 個（ポスター + 背景 + サービスロゴ）
+		await expect(cardA.locator("img")).toHaveCount(3);
 
-		// 映画B（details なし）: img が 0 個
-		await expect(cardB.locator("img")).toHaveCount(0);
+		// 映画B（details なし）: img が 1 個（サービスロゴ）
+		await expect(cardB.locator("img")).toHaveCount(1);
 	});
 
 	test("details なしアイテムのカードに SearchButton（ポスター画像なし）が表示される", async ({

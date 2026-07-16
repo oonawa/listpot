@@ -73,6 +73,13 @@ export const WithDetails: Story = {
 	},
 };
 
+export const WithWatchToggle: Story = {
+	args: {
+		movie: movieWithoutDetails,
+		onWatchToggle: () => {},
+	},
+};
+
 export const SearchPending: Story = {
 	args: {
 		movie: movieWithoutDetails,
