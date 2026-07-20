@@ -1,6 +1,6 @@
 import type { SupportedServiceSlug, SupportedServiceName } from "@/app/consts";
 
-type ListItemBase = {
+export type ListItemBase = {
 	title: string;
 	url: string;
 	serviceSlug: SupportedServiceSlug;
