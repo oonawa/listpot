@@ -1,6 +1,6 @@
-import type { DraftListItem } from "@/features/list/types/ListItem";
 import type { SupportedServiceName, SupportedServiceSlug } from "@/app/consts";
 import { SUPPORTED_SERVICES } from "@/app/consts";
+import type { DraftListItem } from "@/features/list/types/ListItem";
 
 export function useExtractMovieInfo() {
 	type ServiceMatcher = {
@@ -124,6 +124,29 @@ export function useExtractMovieInfo() {
 		return movieInfo;
 	};
 
+	// クリップボードから読んだ本文と URL 表現から作品情報を組み立てる。
+	// iOS の共有リンクは URL が本文と別表現になっており、本文だけでは URL を復元できない。
+	// U-NEXT のように URL を本文へリテラルで含む形式では url が無いため、本文から拾う。
+	const extractMovieInfoFromClipboard = ({
+		text,
+		url,
+	}: {
+		text: string;
+		url: string | null;
+	}): DraftListItem | null => {
+		const resolvedUrl = url ?? extractUrl(text);
+		if (!resolvedUrl) {
+			return null;
+		}
+
+		const matcherResult = resolveMatcherFromUrl(resolvedUrl);
+		if (!matcherResult) {
+			return null;
+		}
+
+		return buildMovieInfo(resolvedUrl, matcherResult, text);
+	};
+
 	const extractMovieInfoFromBrowser = ({
 		title,
 		url,
@@ -149,6 +172,7 @@ export function useExtractMovieInfo() {
 
 	return {
 		extractMovieInfoFromMobile,
+		extractMovieInfoFromClipboard,
 		extractMovieInfoFromBrowser,
 	};
 }
