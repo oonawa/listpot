@@ -48,6 +48,9 @@ local.db-wal
 local.test.db
 local.test.db-shm
 local.test.db-wal
+local.test.w*.db
+local.test.w*.db-shm
+local.test.w*.db-wal
 
 # playwright
 test-results/

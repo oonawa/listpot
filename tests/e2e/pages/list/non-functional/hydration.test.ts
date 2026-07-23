@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 

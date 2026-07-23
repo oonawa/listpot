@@ -1,10 +1,9 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../fixtures";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 import { setupExistingUser } from "../../../helpers/auth";
 import { extractLoginCode } from "../../../helpers/resendLocal";
 
-const BASE_URL = "http://localhost:3001";
 
 test.describe("ログインフロー - 機能テスト", () => {
 	test.beforeEach(async ({ context }) => {
@@ -20,7 +19,7 @@ test.describe("ログインフロー - 機能テスト", () => {
 		const testEmail = `login-wrong-${crypto.randomUUID()}@example.com`;
 		await setupExistingUser(testEmail);
 
-		await page.goto(`${BASE_URL}/login`);
+		await page.goto("/login");
 
 		// メール入力
 		await page.locator("#email").fill(testEmail);
@@ -45,7 +44,7 @@ test.describe("ログインフロー - 機能テスト", () => {
 		const testEmail = `login-ok-${crypto.randomUUID()}@example.com`;
 		await setupExistingUser(testEmail);
 
-		await page.goto(`${BASE_URL}/login`);
+		await page.goto("/login");
 
 		// メール入力
 		await page.locator("#email").fill(testEmail);

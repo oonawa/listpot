@@ -3,7 +3,8 @@ import type {
 	BrowserContextOptions,
 	Page,
 } from "@playwright/test";
-import { devices, expect, test } from "@playwright/test";
+import { devices } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { setupAuthenticatedUser } from "../../../helpers/auth";
 import { seedListItems } from "../../../helpers/listItemsSeed";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
@@ -108,12 +109,12 @@ test.describe("MovieInputForm - 非機能テスト（認証済み × iPhone × C
 	let page: Page;
 	let baseURL: string;
 
-	test.beforeEach(async ({ browser, browserName }, testInfo) => {
+	test.beforeEach(async ({ browser, browserName }) => {
 		test.skip(
 			browserName !== "chromium",
 			"このテストは Chromium のみ対象（CDP 使用）",
 		);
-		baseURL = testInfo.project.use.baseURL ?? "";
+		baseURL = workerBaseUrl;
 		await resetDatabase();
 		await seedDatabase();
 		context = await browser.newContext({ ...IPHONE14_OPTIONS, baseURL });
@@ -147,12 +148,12 @@ test.describe("MovieInputForm - 非機能テスト（未認証 × Pixel 7 × Chr
 	let page: Page;
 	let baseURL: string;
 
-	test.beforeEach(async ({ browser, browserName }, testInfo) => {
+	test.beforeEach(async ({ browser, browserName }) => {
 		test.skip(
 			browserName !== "chromium",
 			"このテストは Chromium のみ対象（CDP 使用）",
 		);
-		baseURL = testInfo.project.use.baseURL ?? "";
+		baseURL = workerBaseUrl;
 		await resetDatabase();
 		await seedDatabase();
 		context = await browser.newContext({ ...PIXEL7_OPTIONS, baseURL });
@@ -180,12 +181,12 @@ test.describe("MovieInputForm - 非機能テスト（未認証 × PC × Chromium
 	let page: Page;
 	let baseURL: string;
 
-	test.beforeEach(async ({ browser, browserName }, testInfo) => {
+	test.beforeEach(async ({ browser, browserName }) => {
 		test.skip(
 			browserName !== "chromium",
 			"このテストは Chromium のみ対象（CDP 使用）",
 		);
-		baseURL = testInfo.project.use.baseURL ?? "";
+		baseURL = workerBaseUrl;
 		await resetDatabase();
 		await seedDatabase();
 		context = await browser.newContext({ ...DESKTOP_CHROME_OPTIONS, baseURL });
@@ -213,12 +214,12 @@ test.describe("MovieInputForm - 非機能テスト（認証済み × PC × Chrom
 	let page: Page;
 	let baseURL: string;
 
-	test.beforeEach(async ({ browser, browserName }, testInfo) => {
+	test.beforeEach(async ({ browser, browserName }) => {
 		test.skip(
 			browserName !== "chromium",
 			"このテストは Chromium のみ対象（CDP 使用）",
 		);
-		baseURL = testInfo.project.use.baseURL ?? "";
+		baseURL = workerBaseUrl;
 		await resetDatabase();
 		await seedDatabase();
 		context = await browser.newContext({ ...DESKTOP_CHROME_OPTIONS, baseURL });

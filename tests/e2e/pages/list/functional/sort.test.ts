@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { eq } from "drizzle-orm";
 import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 import {
@@ -105,7 +105,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -122,7 +122,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -146,7 +146,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -166,7 +166,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -186,7 +186,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -206,7 +206,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -232,7 +232,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -258,7 +258,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -288,7 +288,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -315,7 +315,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		page,
 		context,
 	}, testInfo) => {
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -339,7 +339,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -368,7 +368,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -397,7 +397,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -435,7 +435,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -465,7 +465,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -486,7 +486,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 
@@ -520,7 +520,7 @@ test.describe("SortButton - ネストドロップダウン機能テスト", () =
 		if (testInfo.project.name.startsWith("mobile")) {
 			test.skip(true, "このテストはモバイルプロジェクトでスキップ");
 		}
-		const baseUrl = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseUrl = workerBaseUrl;
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupTestData(context, userAgent, baseUrl);
 

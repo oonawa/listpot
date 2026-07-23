@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { setupAuthenticatedUser } from "../../../helpers/auth";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
 
@@ -48,7 +48,7 @@ test.describe("StoreSuccessNotice - 保存完了メッセージの表示判定",
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		await setupAuthenticatedUser(context, userAgent, testInfo.project.use.baseURL ?? "");
+		await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
 		await page.goto("/");
 		await fillPcFormAndWaitForDraftPanel(page);
 		await registerMovie(page);

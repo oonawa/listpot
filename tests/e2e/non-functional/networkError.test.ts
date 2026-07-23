@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
+import { expect, test, workerBaseUrl } from "../fixtures";
 import { eq } from "drizzle-orm";
 import { listItemsTable, listsTable, streamingServicesTable } from "@/db/schema";
 import {
@@ -46,7 +46,7 @@ test.describe("ネットワークエラー表示", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 
-		const baseURL = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseURL = workerBaseUrl;
 		await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "",
@@ -100,7 +100,7 @@ test.describe("ネットワークエラー表示", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 
-		const baseURL = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseURL = workerBaseUrl;
 		await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "",
@@ -135,7 +135,7 @@ test.describe("ネットワークエラー表示", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 
-		const baseURL = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseURL = workerBaseUrl;
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "",
@@ -166,7 +166,7 @@ test.describe("ネットワークエラー表示", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 
-		const baseURL = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseURL = workerBaseUrl;
 		await setupTempSessionToken(context, baseURL);
 
 		await page.goto("/register");
@@ -196,7 +196,7 @@ test.describe("ネットワークエラー表示", () => {
 			"このテストは desktop-chromium プロジェクトのみ対象",
 		);
 
-		const baseURL = testInfo.project.use.baseURL ?? "http://localhost:3001";
+		const baseURL = workerBaseUrl;
 		const { userId } = await setupAuthenticatedUser(
 			context,
 			testInfo.project.use.userAgent ?? "",
