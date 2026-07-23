@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
-import TapIcon from "@/components/ui/Icons/TapIcon";
+import { Fragment, useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import ShareMark from "./LinkShareSteps/ShareMark";
-import MenuMark from "./LinkShareSteps/MenuMark";
-import Description from "./LinkShareSteps/Description";
+import TapIcon from "@/components/ui/Icons/TapIcon";
 import { SUPPORTED_SERVICES } from "@/app/consts";
+import Description from "./LinkShareSteps/Description";
+import MenuMark from "./LinkShareSteps/MenuMark";
+import ShareMark from "./LinkShareSteps/ShareMark";
 import "./animation.css";
 
 export type ServiceName =
@@ -27,8 +28,10 @@ type ServiceDataItem = {
 const serviceData: ServiceDataItem[] = [
 	{
 		serviceName: SUPPORTED_SERVICES.NETFLIX.name,
+		// 実データではタイトル前後などに U+FEFF が入る。不可視で表示に影響せず、
+		// 編集時に失われても気づけないため、例示では省いている。
 		shareLinkExample:
-			"「 ジュラシック・パーク 」 をNetflix で今 す ぐチ ェ ッ ク \n\nhttps://www.netflix.com/jp/title/60002360?s=i&trkid=258593161&vlang=ja&trg=more",
+			"「ジュラシック・パーク」をNetflixで今すぐチェック\n\nhttps://www.netflix.com/jp/title/60002360?s=i&trkid=13747225&shareType=Title&shareUuid=F6BB6175-FB1B-4F62-9BEC-CEF71E73152A&trg=more&unifiedEntityIdEncoded=Video:60002360&vlang=ja&trg=more",
 		steps: [
 			{ mark: "share", description: "作品の画面でタップ" },
 			{
@@ -165,7 +168,9 @@ export default function TutorialContent() {
 				))}
 			</div>
 
-			<div className={`w-full py-4 grid transition-[grid-template-rows] duration-500 ${isAccordionOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+			<div
+				className={`w-full py-4 grid transition-[grid-template-rows] duration-500 ${isAccordionOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+			>
 				{selectedService && (
 					<div className="overflow-hidden">
 						<div className="py-4">

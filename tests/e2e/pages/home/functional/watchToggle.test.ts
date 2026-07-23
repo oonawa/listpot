@@ -1,11 +1,13 @@
 import crypto from "node:crypto";
-import { expect, test, workerBaseUrl } from "../../../fixtures";
+import type { Locator, Page } from "@playwright/test";
+import { eq } from "drizzle-orm";
+
 import {
 	listItemsTable,
 	listsTable,
 	streamingServicesTable,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { setupAuthenticatedUser } from "../../../helpers/auth";
 import { seedLocalStorageViaInitScript } from "../../../helpers/localStorageSeed";
 import { resetDatabase, seedDatabase } from "../../../lib/dbHelpers";
@@ -38,6 +40,23 @@ async function createDbListItem(userId: number) {
 	return { list, item };
 }
 
+/**
+ * タイトルで対象カードに絞り、そのカードのポスターボタン（詳細を開く）を返す。
+ * createDbListItem が作ったアイテムを確実に操作対象にするための scope。
+ * 「未視聴でありさえすれば他アイテムでも通る」状態や、他テスト由来データの
+ * 混入を検知できるようにする。div の入れ子のうち最も内側（＝当該カード）に絞る。
+ */
+function posterButtonForTitle(page: Page, title: string): Locator {
+	return page
+		.locator("div")
+		.filter({
+			has: page.getByRole("heading", { level: 2, name: title, exact: true }),
+		})
+		.filter({ has: page.getByRole("button", { name: "ポスター画像なし" }) })
+		.last()
+		.getByRole("button", { name: "ポスター画像なし" });
+}
+
 /** 未認証ユーザー用のリスト画面遷移ヘルパー（未視聴アイテム） */
 async function navigateToLocalList(page: import("@playwright/test").Page) {
 	const listId = crypto.randomUUID();
@@ -59,13 +78,17 @@ async function navigateToLocalList(page: import("@playwright/test").Page) {
 
 	// ハイドレーション待ち
 	const listLink = page.getByRole("link", { name: "リスト" });
-	await expect(listLink).not.toHaveAttribute("href", "/undefined", { timeout: 10_000 });
+	await expect(listLink).not.toHaveAttribute("href", "/undefined", {
+		timeout: 10_000,
+	});
 	await listLink.click();
 	await expect(page.getByText("テスト映画")).toBeVisible({ timeout: 10_000 });
 }
 
 /** 未認証ユーザー用のリスト画面遷移ヘルパー（視聴済みアイテム） */
-async function navigateToLocalWatchedList(page: import("@playwright/test").Page) {
+async function navigateToLocalWatchedList(
+	page: import("@playwright/test").Page,
+) {
 	const listId = crypto.randomUUID();
 	const item = {
 		listItemId: crypto.randomUUID(),
@@ -85,11 +108,12 @@ async function navigateToLocalWatchedList(page: import("@playwright/test").Page)
 
 	// ハイドレーション待ち
 	const listLink = page.getByRole("link", { name: "リスト" });
-	await expect(listLink).not.toHaveAttribute("href", "/undefined", { timeout: 10_000 });
+	await expect(listLink).not.toHaveAttribute("href", "/undefined", {
+		timeout: 10_000,
+	});
 	await listLink.click();
 	await expect(page.getByText("テスト映画")).toBeVisible({ timeout: 10_000 });
 }
-
 
 test.describe("WatchToggleButton - 機能テスト", () => {
 	test.beforeEach(async () => {
@@ -106,19 +130,28 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが iPhone でカードを閉じずに2回連続でトグルできる", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-webkit", "mobile-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"mobile-webkitのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
 
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	// ── 未ログイン：未視聴 → 視聴済み ─────────────────────────────────────
@@ -126,11 +159,16 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが iPhone でボタンを押すと「観た！」に変わり安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-webkit", "mobile-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"mobile-webkitのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -141,11 +179,16 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが Pixel 7 でボタンを押すと「観た！」に変わり安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-chromium", "mobile-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-chromium",
+			"mobile-chromiumのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -156,11 +199,16 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが Desktop Chrome でボタンを押すと「観た！」に変わり安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-chromium", "desktop-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-chromium",
+			"desktop-chromiumのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -171,11 +219,16 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが Desktop Firefox でボタンを押すと「観た！」に変わり安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-firefox", "desktop-firefoxのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-firefox",
+			"desktop-firefoxのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -186,11 +239,16 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが Desktop Safari でボタンを押すと「観た！」に変わり安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-webkit", "desktop-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-webkit",
+			"desktop-webkitのみ対象",
+		);
 		await navigateToLocalList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -203,76 +261,121 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 	test("未認証ユーザーが iPhone で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-webkit", "mobile-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"mobile-webkitのみ対象",
+		);
 		await navigateToLocalWatchedList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みを解除する" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	test("未認証ユーザーが Pixel 7 で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-chromium", "mobile-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-chromium",
+			"mobile-chromiumのみ対象",
+		);
 		await navigateToLocalWatchedList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みを解除する" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	test("未認証ユーザーが Desktop Chrome で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-chromium", "desktop-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-chromium",
+			"desktop-chromiumのみ対象",
+		);
 		await navigateToLocalWatchedList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みを解除する" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	test("未認証ユーザーが Desktop Firefox で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-firefox", "desktop-firefoxのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-firefox",
+			"desktop-firefoxのみ対象",
+		);
 		await navigateToLocalWatchedList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みを解除する" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	test("未認証ユーザーが Desktop Safari で「観た！」状態のボタンを押すと「もう観た？」に戻り安定して維持される", async ({
 		page,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-webkit", "desktop-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-webkit",
+			"desktop-webkitのみ対象",
+		);
 		await navigateToLocalWatchedList(page);
 
 		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みを解除する" })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "視聴済みを解除する" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みを解除する" }).click();
 
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 		await page.waitForTimeout(500);
-		await expect(page.getByTestId("watch-toggle-label")).toHaveText("もう観た？");
+		await expect(page.getByTestId("watch-toggle-label")).toHaveText(
+			"もう観た？",
+		);
 	});
 
 	// ── ログイン済み：楽観的更新が即座に反映され最終的にサーバー状態と一致 ──
@@ -281,14 +384,30 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		page,
 		context,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-webkit", "mobile-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-webkit",
+			"mobile-webkitのみ対象",
+		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
-		const { list } = await createDbListItem(userId);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			workerBaseUrl,
+		);
+		const { list, item } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
-		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("heading", {
+				level: 2,
+				name: item.titleOnService,
+				exact: true,
+			}),
+		).toBeVisible();
+		await posterButtonForTitle(page, item.titleOnService).click();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -300,14 +419,30 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		page,
 		context,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "mobile-chromium", "mobile-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "mobile-chromium",
+			"mobile-chromiumのみ対象",
+		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
-		const { list } = await createDbListItem(userId);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			workerBaseUrl,
+		);
+		const { list, item } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
-		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("heading", {
+				level: 2,
+				name: item.titleOnService,
+				exact: true,
+			}),
+		).toBeVisible();
+		await posterButtonForTitle(page, item.titleOnService).click();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -319,14 +454,30 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		page,
 		context,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-chromium", "desktop-chromiumのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-chromium",
+			"desktop-chromiumのみ対象",
+		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
-		const { list } = await createDbListItem(userId);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			workerBaseUrl,
+		);
+		const { list, item } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
-		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("heading", {
+				level: 2,
+				name: item.titleOnService,
+				exact: true,
+			}),
+		).toBeVisible();
+		await posterButtonForTitle(page, item.titleOnService).click();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -338,14 +489,30 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		page,
 		context,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-firefox", "desktop-firefoxのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-firefox",
+			"desktop-firefoxのみ対象",
+		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
-		const { list } = await createDbListItem(userId);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			workerBaseUrl,
+		);
+		const { list, item } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
-		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("heading", {
+				level: 2,
+				name: item.titleOnService,
+				exact: true,
+			}),
+		).toBeVisible();
+		await posterButtonForTitle(page, item.titleOnService).click();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
@@ -357,14 +524,30 @@ test.describe("WatchToggleButton - 機能テスト", () => {
 		page,
 		context,
 	}, testInfo) => {
-		test.skip(testInfo.project.name !== "desktop-webkit", "desktop-webkitのみ対象");
+		test.skip(
+			testInfo.project.name !== "desktop-webkit",
+			"desktop-webkitのみ対象",
+		);
 		const userAgent = await page.evaluate(() => navigator.userAgent);
-		const { userId } = await setupAuthenticatedUser(context, userAgent, workerBaseUrl);
-		const { list } = await createDbListItem(userId);
+		const { userId } = await setupAuthenticatedUser(
+			context,
+			userAgent,
+			workerBaseUrl,
+		);
+		const { list, item } = await createDbListItem(userId);
 
 		await page.goto(`/${list.publicId}`);
-		await page.getByRole("button", { name: "ポスター画像なし" }).click();
-		await expect(page.getByRole("button", { name: "視聴済みにする" })).toBeVisible();
+		await expect(
+			page.getByRole("heading", {
+				level: 2,
+				name: item.titleOnService,
+				exact: true,
+			}),
+		).toBeVisible();
+		await posterButtonForTitle(page, item.titleOnService).click();
+		await expect(
+			page.getByRole("button", { name: "視聴済みにする" }),
+		).toBeVisible();
 		await page.getByRole("button", { name: "視聴済みにする" }).click();
 
 		await expect(page.getByTestId("watch-toggle-label")).toHaveText("観た！");
