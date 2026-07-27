@@ -1,6 +1,6 @@
 "use client";
 
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { atom } from "jotai";
 
 export const authAtom = atom<{
@@ -14,3 +14,8 @@ export const authAtom = atom<{
 export const useAuth = () => {
 	return useAtomValue(authAtom);
 };
+
+// 認証状態の変化は「ログイン完了」などのイベント起点の状態遷移であり副作用ではない。
+// ルートレイアウトの useHydrateAtoms は初回 SSR 値の一度きりで再 hydrate しないため、
+// クライアント遷移でログイン / 新規登録した際は、その成功ハンドラで直接 atom を更新する。
+export const useSetAuth = () => useSetAtom(authAtom);

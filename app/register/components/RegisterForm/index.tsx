@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useListLocalStorageRepository } from "@/features/list/hooks/useListLocalStorageRepository";
+import { useSetAuth } from "@/features/auth/state/authAtom";
 import { userIdSchema } from "@/features/user/schemas/userIdSchema";
 import { searchDuplicateUserId } from "@/features/user/actions/searchDuplicateUserId";
 import { registerUser } from "@/features/user/actions/registerUser";
@@ -42,6 +43,7 @@ export default function RegisterForm({ email, token }: Props) {
 	const [isSearching, setIsSearching] = useState(false);
 
 	const { parseLocalList, clearLocalList, clearSubLists } = useListLocalStorageRepository();
+	const setAuth = useSetAuth();
 
 	const {
 		register,
@@ -107,6 +109,9 @@ export default function RegisterForm({ email, token }: Props) {
 			if (result.success) {
 				clearSubLists();
 				clearLocalList();
+				// クライアント遷移ではルートレイアウトが再実行されず authAtom が未ログインのまま
+				// 固定されるため、登録確定時にここで認証状態を更新する。
+				setAuth({ isLoggedIn: true, publicListId: result.data.publicListId });
 				return redirect("/");
 			}
 

@@ -29,6 +29,7 @@ const hasListItemId = (
 
 export default function DraftListItem({ draft }: Props) {
 	const [mode, setMode] = useState<Mode>("new");
+	const [isWatched, setIsWatched] = useState(draft.isWatched);
 
 	const {
 		selectedMovie,
@@ -53,30 +54,22 @@ export default function DraftListItem({ draft }: Props) {
 	const displayErrorMessage = submitNetworkError ?? errorMessage;
 	const displaySuccess = displayErrorMessage !== undefined ? false : success;
 
+	const handleToggleWatch = () => setIsWatched((prev) => !prev);
+
 	const handleSubmit = () => {
 		const newItem = selectedMovie ?? draft;
 
-		const itemToStore = hasListItemId(newItem)
+		const itemWithId = hasListItemId(newItem)
 			? newItem
 			: {
 					...newItem,
 					listItemId: window.crypto.randomUUID(),
 				};
 
-		submit({ movie: itemToStore });
-	};
-
-	const handleSubmitAsWatched = () => {
-		const newItem = selectedMovie ?? draft;
-
-		const itemToStore = hasListItemId(newItem)
-			? { ...newItem, isWatched: true as const, watchedAt: new Date() }
-			: {
-					...newItem,
-					listItemId: window.crypto.randomUUID(),
-					isWatched: true as const,
-					watchedAt: new Date(),
-				};
+		// 登録は「これで登録する」でのみ行い、その時点のローカル視聴状態を反映する。
+		const itemToStore = isWatched
+			? { ...itemWithId, isWatched: true as const, watchedAt: new Date() }
+			: { ...itemWithId, isWatched: false as const, watchedAt: null };
 
 		submit({ movie: itemToStore });
 	};
@@ -103,6 +96,8 @@ export default function DraftListItem({ draft }: Props) {
 					handleSelectCancel();
 					setMode("searchDetail");
 				}}
+				handleToggleWatch={handleToggleWatch}
+				isWatched={isWatched}
 				storeSuccess={displaySuccess}
 				errorMessage={displayErrorMessage}
 			/>
@@ -133,8 +128,8 @@ export default function DraftListItem({ draft }: Props) {
 			isSubmitPending={isSubmitPending}
 			handleSearch={handleSearchDetail}
 			handleSubmit={handleSubmit}
-			onWatchToggle={handleSubmitAsWatched}
-			isWatchTogglePending={isSubmitPending}
+			onWatchToggle={handleToggleWatch}
+			isWatched={isWatched}
 			storeSuccess={displaySuccess}
 			errorMessage={displayErrorMessage}
 		/>

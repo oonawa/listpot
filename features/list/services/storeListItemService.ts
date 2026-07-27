@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
@@ -97,7 +97,10 @@ export async function storeListItemService({
 				}
 			: {};
 
-		revalidateTag(`list:${listId}`, "default");
+		// updateTag は Server Action 内で read-your-own-writes を成立させ、
+		// クライアントの Router Cache も更新する。revalidateTag は Data Cache のみ
+		// 無効化しクライアント遷移先（別ルートのリスト）が古いまま残るため使わない。
+		updateTag(`list:${listId}`);
 
 		if (movie.isWatched) {
 			return {

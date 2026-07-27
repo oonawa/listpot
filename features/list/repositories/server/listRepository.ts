@@ -257,7 +257,10 @@ export async function storeWatchedListItem(
 		watchedAt: Date;
 	}[],
 ) {
-	await tx.insert(watchedItemsTable).values(watchedItems);
+	// listItemId は主キーのため、既に視聴済みのアイテムを再度同期すると重複違反で
+	// トランザクション全体がロールバックし、同時に同期される新規アイテムまで失われる。
+	// 既に視聴済みならその記録（watchedAt）を正とし、何もしない。
+	await tx.insert(watchedItemsTable).values(watchedItems).onConflictDoNothing();
 }
 
 export async function findListItemIdByPublicIdAndListId({

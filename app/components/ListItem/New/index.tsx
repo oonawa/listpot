@@ -16,7 +16,7 @@ type Props = {
 	handleSearch: () => void;
 	handleSubmit: () => void;
 	onWatchToggle?: () => void;
-	isWatchTogglePending?: boolean;
+	isWatched?: boolean;
 	storeSuccess?: boolean;
 	errorMessage?: string;
 };
@@ -28,7 +28,7 @@ export default function NewListItem({
 	handleSearch,
 	handleSubmit,
 	onWatchToggle,
-	isWatchTogglePending,
+	isWatched,
 	storeSuccess,
 	errorMessage,
 }: Props) {
@@ -64,9 +64,8 @@ export default function NewListItem({
 						<div className="py-4">
 							<div className="bg-background-light-1 rounded-md py-4 flex justify-center">
 								<WatchToggleButton
-									isWatched={movie.isWatched}
+									isWatched={isWatched ?? movie.isWatched}
 									onToggle={onWatchToggle}
-									isPending={isWatchTogglePending}
 								/>
 							</div>
 						</div>

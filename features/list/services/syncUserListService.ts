@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import type { Tx } from "@/db/client";
 import type { ListItem } from "@/features/list/types/ListItem";
 import type { LocalSubList } from "@/features/user/schemas/localListSchema";
@@ -83,7 +83,10 @@ export const syncUserListService = async ({
 			};
 		});
 
-		revalidateTag(`list:${listId}`, "default");
+		// ログイン直後に router.push でリスト画面へ遷移するため、read-your-own-writes の
+		// updateTag でクライアントの Router Cache まで更新する（revalidateTag は Data Cache
+		// のみ無効化し、同期直後のリスト画面が空のまま残る）。
+		updateTag(`list:${listId}`);
 
 		return result;
 	} catch (err) {

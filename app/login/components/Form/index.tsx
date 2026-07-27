@@ -6,6 +6,7 @@ import { sendLoginCode } from "@/features/auth/actions/sendLoginCode";
 import { login } from "@/features/auth/actions/login";
 import { syncUserList } from "@/features/list/actions/syncUserList";
 import { useListLocalStorageRepository } from "@/features/list/hooks/useListLocalStorageRepository";
+import { useSetAuth } from "@/features/auth/state/authAtom";
 import { useServerAction } from "@/features/shared/hooks/useServerAction";
 import type { Result } from "@/features/shared/types/Result";
 import VerifyForm from "@/app/components/auth/VerifyForm";
@@ -21,6 +22,7 @@ export default function LoginForm() {
 	const loginDataRef = useRef<LoginData | null>(null);
 	const [syncError, setSyncError] = useState<string | null>(null);
 	const { parseLocalList, clearLocalList, getSubLists, clearSubLists } = useListLocalStorageRepository();
+	const setAuth = useSetAuth();
 	const { execute: executeSync, networkError: syncNetworkError } = useServerAction();
 
 	const doSync = () => {
@@ -37,6 +39,9 @@ export default function LoginForm() {
 			}
 			clearSubLists();
 			clearLocalList();
+			// クライアント遷移ではルートレイアウトが再実行されず authAtom が未ログインのまま
+			// 固定されるため、ログイン確定時にここで認証状態を更新する。
+			setAuth({ isLoggedIn: true, publicListId: result.data.publicListId });
 			router.push(`/${result.data.publicListId}`);
 		});
 	};

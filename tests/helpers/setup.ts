@@ -15,6 +15,8 @@ vi.mock("next/cache", () => ({
 		_tag: string,
 		_profile?: string | { expire?: number },
 	) => undefined,
+	updateTag: (_tag: string) => undefined,
+	refresh: () => undefined,
 	revalidatePath: (_path: string, _type?: "layout" | "page") => undefined,
 }));
 
