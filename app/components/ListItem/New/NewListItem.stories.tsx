@@ -77,6 +77,15 @@ export const WithWatchToggle: Story = {
 	args: {
 		movie: movieWithoutDetails,
 		onWatchToggle: () => {},
+		isWatched: false,
+	},
+};
+
+export const WithWatchToggleWatched: Story = {
+	args: {
+		movie: movieWithoutDetails,
+		onWatchToggle: () => {},
+		isWatched: true,
 	},
 };
 

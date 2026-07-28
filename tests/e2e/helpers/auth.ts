@@ -85,6 +85,42 @@ export async function setupAuthenticatedUser(
 	return { userId: user.id, sessionToken };
 }
 
+/**
+ * 既存ユーザー（setupExistingUser 等で作成済み）にセッション Cookie を付与し、
+ * ログイン状態にする。同一ユーザーで「事前にリストを訪問してキャッシュを温める →
+ * ログアウト → フォームで再ログイン」という同期テストのウォームアップに使う。
+ */
+export async function loginAsExistingUser(
+	context: BrowserContext,
+	userId: number,
+	userAgent: string,
+	baseUrl: string,
+) {
+	const deviceId = generateDeviceId(userAgent);
+	const sessionToken = await generateSessionToken({ userId, deviceId });
+	const now = new Date();
+	const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+	await db.insert(sessionTokensTable).values({
+		token: sessionToken,
+		deviceId,
+		userId,
+		createdAt: now,
+		expiresAt,
+	});
+
+	await context.addCookies([
+		{
+			name: "session_token",
+			value: sessionToken,
+			url: baseUrl,
+			httpOnly: true,
+		},
+	]);
+
+	return { sessionToken };
+}
+
 export async function setupReauthToken(
 	context: BrowserContext,
 	userId: number,

@@ -21,7 +21,7 @@ type Props = {
 	handleSubmit: () => void;
 	handleCancel: () => void;
 	handleToggleWatch?: () => void;
-	isTogglePending?: boolean;
+	isWatched?: boolean;
 	storeSuccess?: boolean;
 	errorMessage?: string;
 };
@@ -34,7 +34,7 @@ export default function PreviewListItem({
 	handleSubmit,
 	handleCancel,
 	handleToggleWatch,
-	isTogglePending,
+	isWatched,
 	storeSuccess,
 	errorMessage,
 }: Props) {
@@ -76,11 +76,14 @@ export default function PreviewListItem({
 									}
 								/>
 								{handleToggleWatch && (
-									<WatchToggleButton
-										isWatched={movie.isWatched}
-										onToggle={handleToggleWatch}
-										isPending={isTogglePending}
-									/>
+									<div className="py-4">
+										<div className="bg-background-light-1 rounded-md py-4 flex justify-center">
+											<WatchToggleButton
+												isWatched={isWatched ?? movie.isWatched}
+												onToggle={handleToggleWatch}
+											/>
+										</div>
+									</div>
 								)}
 								{movie.details && (
 									<Overview overview={movie.details.overview} />

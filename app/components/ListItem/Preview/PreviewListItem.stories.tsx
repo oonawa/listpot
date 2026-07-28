@@ -57,6 +57,20 @@ export const Default: Story = {
 	args: {},
 };
 
+export const WithWatchToggle: Story = {
+	args: {
+		handleToggleWatch: () => {},
+		isWatched: false,
+	},
+};
+
+export const WithWatchToggleWatched: Story = {
+	args: {
+		handleToggleWatch: () => {},
+		isWatched: true,
+	},
+};
+
 export const SearchPending: Story = {
 	args: {
 		isSearchPending: true,

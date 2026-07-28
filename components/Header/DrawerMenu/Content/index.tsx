@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logout } from "@/features/auth/actions/logout";
+import { useSetAuth } from "@/features/auth/state/authAtom";
+import { useEnsureLocalListId } from "@/features/list/hooks/useEnsureLocalListId";
 import { useServerAction } from "@/features/shared/hooks/useServerAction";
 import {
 	Drawer,
@@ -22,11 +24,19 @@ type Props = {
 
 export default function DrawerMenuContent({ email }: Props) {
 	const router = useRouter();
+	const setAuth = useSetAuth();
+	const { ensureListId } = useEnsureLocalListId();
 	const { execute, isPending, networkError } = useServerAction();
 
 	const onLogout = () => {
 		execute(async () => {
 			await logout();
+			// クライアント遷移ではルートレイアウトが再実行されず authAtom が
+			// ログイン済みのまま固定される。そのまま登録すると publicListId 付きで
+			// サーバーアクションを叩き、cookie 消失により認証エラーになる。
+			// ログアウト確定時にここで未ログイン状態へ更新し、ローカルリストも用意する。
+			setAuth({ isLoggedIn: false, publicListId: null });
+			ensureListId();
 			router.push("/?home=true");
 		});
 	};
