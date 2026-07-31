@@ -20,7 +20,7 @@ export default function Footer() {
 						</li>
 						<li>
 							<a href="/about" className="hover:text-foreground">
-								どんなもの？
+								サービスについて
 							</a>
 						</li>
 						<li>
@@ -30,7 +30,7 @@ export default function Footer() {
 						</li>
 						<li>
 							<a href="/privacy" className="hover:text-foreground">
-								プライバシー
+								プライバシーポリシー
 							</a>
 						</li>
 					</ul>

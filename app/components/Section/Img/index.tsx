@@ -4,5 +4,5 @@ type Props = {
 };
 
 export default function Img({ src, alt }: Props) {
-	return <img src={src} alt={alt} className="my-6 rounded-lg border border-background-light-1" />;
+	return <img src={src} alt={alt} className="rounded-lg border border-background-light-1" />;
 }
