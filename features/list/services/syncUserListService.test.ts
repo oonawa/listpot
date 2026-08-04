@@ -32,7 +32,8 @@ function makeListItem(overrides?: { title?: string; url?: string }): ListItem {
 	return {
 		listItemId: crypto.randomUUID(),
 		title: overrides?.title ?? "テスト作品",
-		url: overrides?.url ?? `https://www.netflix.com/watch/${crypto.randomUUID()}`,
+		url:
+			overrides?.url ?? `https://www.netflix.com/watch/${crypto.randomUUID()}`,
 		serviceSlug: "netflix",
 		serviceName: "Netflix",
 		isWatched: false,
@@ -186,7 +187,8 @@ describe("syncUserListService - サブリスト同期", () => {
 describe("syncUserListService - 既に視聴済みのアイテムが含まれる同期", () => {
 	let listId = 0;
 	let existingListItemId = 0;
-	const existingUrl = "https://www.netflix.com/watch/already-synced-and-watched";
+	const existingUrl =
+		"https://www.netflix.com/watch/already-synced-and-watched";
 
 	beforeEach(async () => {
 		await db.delete(subListItemsTable);
@@ -232,7 +234,10 @@ describe("syncUserListService - 既に視聴済みのアイテムが含まれる
 
 	it("DB に視聴済みで存在するアイテムを含めても同期が成功する", async () => {
 		const alreadyWatched: ListItem = {
-			...makeListItem({ url: existingUrl, title: "既に同期済みの視聴済み作品" }),
+			...makeListItem({
+				url: existingUrl,
+				title: "既に同期済みの視聴済み作品",
+			}),
 			isWatched: true,
 			watchedAt: new Date(),
 		};
@@ -248,7 +253,10 @@ describe("syncUserListService - 既に視聴済みのアイテムが含まれる
 
 	it("視聴済み重複が含まれても、同時に渡した新規アイテムがロールバックされず保存される", async () => {
 		const alreadyWatched: ListItem = {
-			...makeListItem({ url: existingUrl, title: "既に同期済みの視聴済み作品" }),
+			...makeListItem({
+				url: existingUrl,
+				title: "既に同期済みの視聴済み作品",
+			}),
 			isWatched: true,
 			watchedAt: new Date(),
 		};
@@ -273,7 +281,10 @@ describe("syncUserListService - 既に視聴済みのアイテムが含まれる
 
 	it("既存の視聴済みレコードは重複せず1件のまま保たれる", async () => {
 		const alreadyWatched: ListItem = {
-			...makeListItem({ url: existingUrl, title: "既に同期済みの視聴済み作品" }),
+			...makeListItem({
+				url: existingUrl,
+				title: "既に同期済みの視聴済み作品",
+			}),
 			isWatched: true,
 			watchedAt: new Date(),
 		};
@@ -290,5 +301,106 @@ describe("syncUserListService - 既に視聴済みのアイテムが含まれる
 			.where(eq(watchedItemsTable.listItemId, existingListItemId));
 
 		expect(watchedRows).toHaveLength(1);
+	});
+});
+
+describe("syncUserListService - ローカル側に重複がある同期", () => {
+	let listId = 0;
+
+	beforeEach(async () => {
+		await db.delete(subListItemsTable);
+		await db.delete(subListsTable);
+		await db.delete(watchedItemsTable);
+		await db.delete(listItemsTable);
+		await db.delete(listsTable);
+		await db.delete(usersTable);
+
+		await findStreamingServiceIdBySlug("netflix");
+
+		const [user] = await db
+			.insert(usersTable)
+			.values({ publicId: "sync-local-duplicate-test-user" })
+			.returning({ id: usersTable.id });
+
+		const [list] = await db
+			.insert(listsTable)
+			.values({ publicId: crypto.randomUUID(), userId: user.id })
+			.returning({ id: listsTable.id });
+
+		listId = list.id;
+	});
+
+	// list_items_table には listId + watchUrl の unique index があり、ローカル側に同じ URL が
+	// 2 件あると unique 違反でトランザクション全体がロールバックする。同時に同期されるはずの
+	// 新規アイテムまで巻き添えで失われるため、事前に重複排除する。
+	it("ローカルに同一 URL が 2 件あっても同期が成功し、新規アイテムが失われない", async () => {
+		const duplicatedUrl = "https://www.netflix.com/watch/duplicated-in-local";
+		const items: ListItem[] = [
+			makeListItem({ url: duplicatedUrl, title: "重複A" }),
+			makeListItem({ url: duplicatedUrl, title: "重複B" }),
+			makeListItem({ title: "巻き添えになる新規アイテム" }),
+		];
+
+		const result = await syncUserListService({ listId, items });
+
+		expect(result.success).toBe(true);
+
+		const stored = await db
+			.select({ title: listItemsTable.titleOnService })
+			.from(listItemsTable)
+			.where(eq(listItemsTable.listId, listId));
+
+		expect(stored.map((item) => item.title)).toContain(
+			"巻き添えになる新規アイテム",
+		);
+		// 重複した URL は 1 件だけ保存される
+		expect(stored).toHaveLength(2);
+	});
+
+	// sub_lists_table.public_id は unique。ローカルの subLists をそのまま insert すると、
+	// 既に同期済みの subListId を再度渡したときに unique 違反でロールバックする。
+	it("同じローカルデータで 2 回同期しても 2 回目の新規アイテムが失われない", async () => {
+		const subListId = crypto.randomUUID();
+		const first = makeListItem({ title: "1回目の作品" });
+
+		const firstResult = await syncUserListService({
+			listId,
+			items: [first],
+			subLists: [
+				{ subListId, name: "お気に入り", listItemIds: [first.listItemId] },
+			],
+		});
+
+		expect(firstResult.success).toBe(true);
+
+		const second = makeListItem({ title: "2回目の作品" });
+		const secondResult = await syncUserListService({
+			listId,
+			items: [first, second],
+			subLists: [
+				{
+					subListId,
+					name: "お気に入り",
+					listItemIds: [first.listItemId, second.listItemId],
+				},
+			],
+		});
+
+		expect(secondResult.success).toBe(true);
+
+		const stored = await db
+			.select({ title: listItemsTable.titleOnService })
+			.from(listItemsTable)
+			.where(eq(listItemsTable.listId, listId));
+
+		expect(stored.map((item) => item.title)).toContain("2回目の作品");
+
+		// サブリストは重複して作られない
+		const subLists = await db
+			.select({ publicId: subListsTable.publicId })
+			.from(subListsTable)
+			.where(eq(subListsTable.listId, listId));
+
+		expect(subLists).toHaveLength(1);
 	});
 });

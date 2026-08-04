@@ -113,13 +113,34 @@ describe("manageSubListItemService", () => {
 
 			expect(result.error.code).toBe("NOT_FOUND_ERROR");
 		});
+
+		// subListId + listItemId は unique。複数タブなどで同じ追加が 2 回走っても、
+		// 例外を外へ出さず Result を返す。
+		it("同じアイテムを 2 回追加しても例外を投げず成功を返す", async () => {
+			const args = {
+				subListPublicId,
+				listItemPublicId,
+				userId,
+				action: "add" as const,
+			};
+
+			await manageSubListItemService(args);
+			const result = await manageSubListItemService(args);
+
+			expect(result.success).toBe(true);
+
+			const items = await db
+				.select()
+				.from(subListItemsTable)
+				.where(eq(subListItemsTable.subListId, subListId));
+
+			expect(items).toHaveLength(1);
+		});
 	});
 
 	describe("remove アクション", () => {
 		it("アイテムをサブリストから削除できる", async () => {
-			await db
-				.insert(subListItemsTable)
-				.values({ subListId, listItemId });
+			await db.insert(subListItemsTable).values({ subListId, listItemId });
 
 			const result = await manageSubListItemService({
 				subListPublicId,

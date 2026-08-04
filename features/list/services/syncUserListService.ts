@@ -12,6 +12,7 @@ import {
 	storeListItemMovieMatch,
 	insertSubList,
 	insertSubListItems,
+	findSubListsByPublicIds,
 } from "../repositories/server/listRepository";
 
 export const syncUserListService = async ({
@@ -23,7 +24,11 @@ export const syncUserListService = async ({
 	items: ListItem[];
 	subLists?: LocalSubList[];
 }): Promise<Result> => {
-	const watchUrls = items.map((item) => item.url);
+	// list_items_table は listId + watchUrl が unique。ローカル側に同じ URL が 2 件あると
+	// unique 違反でトランザクション全体がロールバックし、同時に同期されるはずだった新規
+	// アイテムまで失われる。先頭の 1 件を残して重複を落としてから同期する。
+	const uniqueItems = dedupeByUrl(items);
+	const watchUrls = uniqueItems.map((item) => item.url);
 
 	try {
 		const result = await db.transaction(async (tx): Promise<Result> => {
@@ -35,14 +40,14 @@ export const syncUserListService = async ({
 			const existingDuplicateWatchUrlSet = new Set(
 				existingDuplicateListItems.map((item) => item.watchUrl),
 			);
-			const newItems = items.filter(
+			const newItems = uniqueItems.filter(
 				(item) => !existingDuplicateWatchUrlSet.has(item.url),
 			);
 
 			const storedNewItems = await storeNewListItems({ tx, listId, newItems });
 
 			const resolved = resolveListItemIds({
-				allLocalItems: items,
+				allLocalItems: uniqueItems,
 				newItems,
 				storedNewItems,
 				existingDuplicateListItems,
@@ -102,6 +107,30 @@ export const syncUserListService = async ({
 	}
 };
 
+function dedupeBySubListId(subLists: LocalSubList[]): LocalSubList[] {
+	const seenSubListIds = new Set<string>();
+
+	return subLists.filter((subList) => {
+		if (seenSubListIds.has(subList.subListId)) {
+			return false;
+		}
+		seenSubListIds.add(subList.subListId);
+		return true;
+	});
+}
+
+function dedupeByUrl(items: ListItem[]): ListItem[] {
+	const seenUrls = new Set<string>();
+
+	return items.filter((item) => {
+		if (seenUrls.has(item.url)) {
+			return false;
+		}
+		seenUrls.add(item.url);
+		return true;
+	});
+}
+
 function resolveListItemIds({
 	allLocalItems,
 	newItems,
@@ -153,9 +182,24 @@ async function syncSubLists({
 		]),
 	);
 
+	// sub_lists_table.public_id は unique。ローカル側の重複と、既に同期済みのサブリストの
+	// 二重 insert を先に落としておかないと、unique 違反でトランザクション全体がロールバックし、
+	// 同時に同期されるはずだった新規アイテムまで失われる。
+	const uniqueSubLists = dedupeBySubListId(subLists);
+	const existingSubLists = await findSubListsByPublicIds(
+		tx,
+		uniqueSubLists.map((sl) => sl.subListId),
+	);
+	const existingSubListIdByPublicId = new Map(
+		existingSubLists.map((sl) => [sl.publicId, sl.id]),
+	);
+	const subListsToInsert = uniqueSubLists.filter(
+		(sl) => !existingSubListIdByPublicId.has(sl.subListId),
+	);
+
 	// 一括でサブリストをinsert（ループ内クエリ禁止のため直列化を最小限に）
 	const insertedSubLists = await Promise.all(
-		subLists.map((sl) =>
+		subListsToInsert.map((sl) =>
 			insertSubList(tx, {
 				listId,
 				publicId: sl.subListId,
@@ -164,13 +208,26 @@ async function syncSubLists({
 		),
 	);
 
+	const resolvedSubLists = [
+		...insertedSubLists,
+		...uniqueSubLists.flatMap((sl) => {
+			const existingId = existingSubListIdByPublicId.get(sl.subListId);
+			return existingId === undefined
+				? []
+				: [{ inserted: { id: existingId }, sl }];
+		}),
+	];
+
 	const allSubListItems: { subListId: number; listItemId: number }[] = [];
 
-	for (const { inserted, sl } of insertedSubLists) {
+	for (const { inserted, sl } of resolvedSubLists) {
 		for (const localItemId of sl.listItemIds) {
 			const dbListItemId = localIdToDbId.get(localItemId);
 			if (dbListItemId !== undefined) {
-				allSubListItems.push({ subListId: inserted.id, listItemId: dbListItemId });
+				allSubListItems.push({
+					subListId: inserted.id,
+					listItemId: dbListItemId,
+				});
 			}
 		}
 	}

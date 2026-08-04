@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import {
 	deleteListItemByPublicId,
@@ -50,7 +50,11 @@ export async function removeListItemService({
 			};
 		}
 
-		revalidateTag(`list:${listItem.listId}`, "default");
+		// 削除は同一ルートに留まるが、ログイン時のリストはサーバーコンポーネントの描画結果で
+		// あり楽観更新が無い。revalidateTag は Data Cache のみ無効化するため、削除後の
+		// router.refresh() でも削除済みの作品がリストに残る。read-your-own-writes の
+		// updateTag を使う。
+		updateTag(`list:${listItem.listId}`);
 
 		return { success: true };
 	} catch (error) {

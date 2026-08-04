@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import type { ListItem } from "@/features/list/types/ListItem";
 import {
@@ -72,7 +72,10 @@ export async function toggleWatchStatusService({
 					watchedAt: null,
 				};
 
-		revalidateTag(`list:${listItem.listId}`, "default");
+		// 楽観更新が効くのは詳細シート内のトグルだけで、リストのカードはサーバーコンポーネントの
+		// 描画結果。revalidateTag は Data Cache のみ無効化するため、トグル後の router.refresh()
+		// でもカードの視聴済みバッジが古いまま残る。read-your-own-writes の updateTag を使う。
+		updateTag(`list:${listItem.listId}`);
 
 		return {
 			success: true,
