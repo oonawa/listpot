@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import type { Result } from "@/features/shared/types/Result";
 import {
 	deleteSubList,
@@ -40,7 +40,10 @@ export const deleteSubListService = async ({
 
 	await deleteSubList(subList.id);
 
-	revalidateTag(`list:${subList.listId}`, "default");
+	// 削除直後に router.push でメインリストへ遷移する。revalidateTag は Data Cache のみ
+	// 無効化するため、温まっているメインリストの Router Cache に削除したサブリストのタブが
+	// 残る。read-your-own-writes の updateTag を使う。
+	updateTag(`list:${subList.listId}`);
 
 	return { success: true };
 };

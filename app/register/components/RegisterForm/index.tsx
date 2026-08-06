@@ -26,10 +26,8 @@ type Props = {
 const DEBOUNCE_MS = 500;
 
 export default function RegisterForm({ email, token }: Props) {
-	const {
-		execute: executeSearch,
-		isPending: isPendingSearch,
-	} = useServerAction();
+	const { execute: executeSearch, isPending: isPendingSearch } =
+		useServerAction();
 	const {
 		execute: executeRegister,
 		isPending: isPendingRegister,
@@ -42,7 +40,8 @@ export default function RegisterForm({ email, token }: Props) {
 
 	const [isSearching, setIsSearching] = useState(false);
 
-	const { parseLocalList, clearLocalList, clearSubLists } = useListLocalStorageRepository();
+	const { parseLocalList, clearLocalList, clearSubLists } =
+		useListLocalStorageRepository();
 	const setAuth = useSetAuth();
 
 	const {
@@ -97,7 +96,7 @@ export default function RegisterForm({ email, token }: Props) {
 		register("userId");
 
 	const onSubmit = async (data: UserIdFormData) => {
-		const localUserList = parseLocalList();
+		const { hasInvalidData, ...localUserList } = parseLocalList();
 		executeRegister(async () => {
 			const result = await registerUser({
 				userId: data.userId,
@@ -107,8 +106,12 @@ export default function RegisterForm({ email, token }: Props) {
 			});
 
 			if (result.success) {
-				clearSubLists();
-				clearLocalList();
+				// 検証で落ちた要素があるときは同期できていないデータが残っている。
+				// ここで消すとそれが失われるため、localStorage はそのままにする。
+				if (!hasInvalidData) {
+					clearSubLists();
+					clearLocalList();
+				}
 				// クライアント遷移ではルートレイアウトが再実行されず authAtom が未ログインのまま
 				// 固定されるため、登録確定時にここで認証状態を更新する。
 				setAuth({ isLoggedIn: true, publicListId: result.data.publicListId });

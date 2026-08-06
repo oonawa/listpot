@@ -21,24 +21,29 @@ export default function LoginForm() {
 	const emailRef = useRef("");
 	const loginDataRef = useRef<LoginData | null>(null);
 	const [syncError, setSyncError] = useState<string | null>(null);
-	const { parseLocalList, clearLocalList, getSubLists, clearSubLists } = useListLocalStorageRepository();
+	const { parseLocalList, clearLocalList, clearSubLists } =
+		useListLocalStorageRepository();
 	const setAuth = useSetAuth();
-	const { execute: executeSync, networkError: syncNetworkError } = useServerAction();
+	const { execute: executeSync, networkError: syncNetworkError } =
+		useServerAction();
 
 	const doSync = () => {
 		executeSync(async () => {
 			const localList = parseLocalList();
-			const localSubLists = getSubLists();
 			const result = await syncUserList({
 				localUserListItems: localList.items,
-				localSubLists,
+				localSubLists: localList.subLists,
 			});
 			if (!result.success) {
 				setSyncError(result.error.message);
 				return;
 			}
-			clearSubLists();
-			clearLocalList();
+			// 検証で落ちた要素があるときは同期できていないデータが残っている。
+			// ここで消すとそれが失われるため、localStorage はそのままにする。
+			if (!localList.hasInvalidData) {
+				clearSubLists();
+				clearLocalList();
+			}
 			// クライアント遷移ではルートレイアウトが再実行されず authAtom が未ログインのまま
 			// 固定されるため、ログイン確定時にここで認証状態を更新する。
 			setAuth({ isLoggedIn: true, publicListId: result.data.publicListId });

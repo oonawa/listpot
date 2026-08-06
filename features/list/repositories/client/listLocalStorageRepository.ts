@@ -2,7 +2,7 @@ import type { createStore } from "jotai";
 
 import type { ListItem } from "@/features/list/types/ListItem";
 import { listpotAtom } from "@/features/shared/store";
-import { localListSchema } from "@/features/user/schemas/localListSchema";
+import { parseLocalListLeniently } from "@/features/user/schemas/localListSchema";
 
 type Store = ReturnType<typeof createStore>;
 
@@ -95,14 +95,16 @@ export function parseLocalList(store: Store): {
 	listId: string;
 	items: ListItem[];
 	subLists: { subListId: string; name: string; listItemIds: string[] }[];
+	/** 検証に失敗して同期対象から落ちた要素があるか。true なら localStorage を消さない。 */
+	hasInvalidData: boolean;
 } {
 	const current = store.get(listpotAtom);
-	const parsed = localListSchema.safeParse({
+	const { localList, hasInvalidData } = parseLocalListLeniently({
 		...current.list,
 		subLists: current.subLists,
 	});
 
-	return parsed.success ? parsed.data : { listId: "", items: [], subLists: [] };
+	return { ...localList, hasInvalidData };
 }
 
 export function getSubLists(

@@ -615,7 +615,26 @@ export async function insertSubListItem(
 	tx: Tx,
 	{ subListId, listItemId }: { subListId: number; listItemId: number },
 ): Promise<void> {
-	await tx.insert(subListItemsTable).values({ subListId, listItemId });
+	// subListId + listItemId は unique。複数タブなどで同じ追加が 2 回走っても、
+	// 既に紐付いている状態を正として何もしない。
+	await tx
+		.insert(subListItemsTable)
+		.values({ subListId, listItemId })
+		.onConflictDoNothing();
+}
+
+export async function findSubListsByPublicIds(
+	tx: Tx,
+	publicIds: string[],
+): Promise<{ id: number; publicId: string }[]> {
+	if (publicIds.length === 0) {
+		return [];
+	}
+
+	return await tx
+		.select({ id: subListsTable.id, publicId: subListsTable.publicId })
+		.from(subListsTable)
+		.where(inArray(subListsTable.publicId, publicIds));
 }
 
 export async function insertSubListItems(
@@ -623,7 +642,9 @@ export async function insertSubListItems(
 	items: { subListId: number; listItemId: number }[],
 ): Promise<void> {
 	if (items.length === 0) return;
-	await tx.insert(subListItemsTable).values(items);
+	// subListId + listItemId は unique。再同期などで既に紐付いている組み合わせが混ざっても
+	// 重複違反でトランザクション全体を巻き込まないよう、既存はそのままにする。
+	await tx.insert(subListItemsTable).values(items).onConflictDoNothing();
 }
 
 export async function deleteSubList(subListId: number): Promise<void> {

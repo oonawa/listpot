@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { localListSchema, localSubListSchema } from "./localListSchema";
+import {
+	localListSchema,
+	localSubListSchema,
+	parseLocalListLeniently,
+} from "./localListSchema";
 
 describe("localSubListSchema", () => {
 	it("正常なサブリストデータをパースできる", () => {
@@ -83,5 +87,53 @@ describe("localListSchema（subLists フィールド追加後）", () => {
 		});
 
 		expect(result.success).toBe(true);
+	});
+});
+
+describe("parseLocalListLeniently", () => {
+	const listId = "12345678-1234-4234-b234-123456789012";
+
+	function makeItem(overrides?: Record<string, unknown>) {
+		return {
+			listItemId: "22222222-2222-4222-b222-222222222222",
+			title: "テストアイテム",
+			url: "https://example.com",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: new Date(),
+			isWatched: false,
+			watchedAt: null,
+			...overrides,
+		};
+	}
+
+	it("全て正常なら hasInvalidData は false になる", () => {
+		const result = parseLocalListLeniently({
+			listId,
+			items: [makeItem()],
+			subLists: [],
+		});
+
+		expect(result.hasInvalidData).toBe(false);
+		expect(result.localList.listId).toBe(listId);
+		expect(result.localList.items).toHaveLength(1);
+	});
+
+	it("不正な item だけを落として残りを返す", () => {
+		const result = parseLocalListLeniently({
+			listId,
+			items: [makeItem(), makeItem({ listItemId: "not-a-uuid" })],
+			subLists: [],
+		});
+
+		expect(result.localList.items).toHaveLength(1);
+		expect(result.hasInvalidData).toBe(true);
+	});
+
+	it("形の異なる入力でも例外を投げず hasInvalidData を立てる", () => {
+		const result = parseLocalListLeniently(null);
+
+		expect(result.localList).toEqual({ listId: "", items: [], subLists: [] });
+		expect(result.hasInvalidData).toBe(true);
 	});
 });

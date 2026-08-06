@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import type { Page } from "@playwright/test";
 import { expect, test, workerBaseUrl } from "../../../fixtures";
 import { eq } from "drizzle-orm";
 import {
@@ -117,6 +118,38 @@ async function setupLoggedInTestData(
 // テスト: 検索バー - キーワードで絞り込み
 // ─────────────────────────────────────────────────────────────────
 
+/**
+ * ログイン版のリスト画面を開き、ハイドレーション完了まで待つ。
+ *
+ * ログイン版のリストはサーバーコンポーネントの描画結果で、アイテムは SSR の HTML だけで
+ * 揃う。そのため件数のアサーションはハイドレーションを待たずに素通りし、その直後の入力や
+ * クリックが React へ届かないまま捨てられる（ハイドレーション時に React が state の値で
+ * DOM を上書きするため、入力した文字が消えてフィルターも効かない）。
+ *
+ * ゲスト版は localStorage から描画するぶんアイテムの表示自体がハイドレーション後になるため、
+ * この待ちは不要。ログイン版だけが暗黙の待ちを持たない。
+ *
+ * 検索ボックスへの入力が React の state に載った（＝クリアボタンが現れた）ことで完了を
+ * 検出し、入力を消して元の状態へ戻す。
+ */
+async function gotoHydratedListPage(page: Page, publicListId: string) {
+	await page.goto(`/${publicListId}`);
+
+	const searchbox = page.getByRole("searchbox", { name: "リスト内検索" });
+	const clearButton = page.getByRole("button", {
+		name: "検索キーワードをクリア",
+	});
+
+	await expect(async () => {
+		await searchbox.fill("hydration-probe");
+		await expect(clearButton).toBeVisible({ timeout: 500 });
+	}).toPass({ timeout: 15_000 });
+
+	await clearButton.click();
+	await expect(searchbox).toHaveValue("");
+	await expect(clearButton).toHaveCount(0);
+}
+
 test.describe("検索・フィルター - 検索バー（キーワード絞り込み）", () => {
 	test.beforeEach(async () => {
 		await resetDatabase();
@@ -135,7 +168,7 @@ test.describe("検索・フィルター - 検索バー（キーワード絞り�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await expect(page.locator("h2")).toHaveCount(3);
 
 		await page.getByRole("searchbox", { name: "リスト内検索" }).fill("ゴッドファーザー");
@@ -189,7 +222,7 @@ test.describe("検索・フィルター - クリアボタンでキーワード�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		await expect(
 			page.getByRole("button", { name: "検索キーワードをクリア" }),
@@ -204,7 +237,7 @@ test.describe("検索・フィルター - クリアボタンでキーワード�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		const searchbox = page.getByRole("searchbox", { name: "リスト内検索" });
 		await searchbox.fill("ゴッドファーザー");
@@ -318,7 +351,7 @@ test.describe("検索・フィルター - 入力から 200ms 後に表示が切�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await expect(page.locator("h2")).toHaveCount(3);
 
 		await page.getByRole("searchbox", { name: "リスト内検索" }).fill("スター");
@@ -350,7 +383,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await expect(page.locator("h2")).toHaveCount(3);
 
 		await page.getByRole("button", { name: "サービス" }).click();
@@ -369,7 +402,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		await page.getByRole("button", { name: "サービス" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Netflix" }).click();
@@ -386,7 +419,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		await page.getByRole("button", { name: "サービス" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Netflix" }).click();
@@ -406,7 +439,7 @@ test.describe("検索・フィルター - 配信サービスで絞り込み", ()
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		await page.getByRole("button", { name: "サービス" }).click();
 
@@ -465,7 +498,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 
 		await expect(page.locator('[data-testid="active-filter-chip"]')).toHaveCount(0);
 	});
@@ -478,7 +511,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await page.getByRole("button", { name: "サービス" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Netflix" }).click();
 
@@ -496,7 +529,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await page.getByRole("button", { name: "サービス" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Netflix" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "U-NEXT" }).click();
@@ -512,7 +545,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await page.getByRole("button", { name: "サービス" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "Netflix" }).click();
 		await page.getByRole("menuitemcheckbox", { name: "U-NEXT" }).click();
@@ -537,7 +570,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await page.getByRole("button", { name: "もう観た？" }).click();
 		await page.getByRole("menuitem", { name: "観た" }).click();
 
@@ -555,7 +588,7 @@ test.describe("検索・フィルター - 適用中フィルターチップの�
 		const userAgent = testInfo.project.use.userAgent ?? "";
 		const { list } = await setupLoggedInTestData(context, userAgent, baseUrl);
 
-		await page.goto(`/${list.publicId}`);
+		await gotoHydratedListPage(page, list.publicId);
 		await page.getByRole("button", { name: "もう観た？" }).click();
 		await page.getByRole("menuitem", { name: "観た" }).click();
 		await expect(page.locator('[data-testid="active-filter-chip"]')).toHaveCount(1);

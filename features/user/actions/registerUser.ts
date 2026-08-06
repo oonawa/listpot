@@ -7,18 +7,12 @@ import { eq } from "drizzle-orm";
 import { tempSessionTokensTable } from "@/db/schema";
 import type { Result } from "@/features/shared/types/Result";
 import type { LocalList } from "@/features/user/schemas/localListSchema";
-import { localListSchema } from "@/features/user/schemas/localListSchema";
+import { parseLocalListLeniently } from "@/features/user/schemas/localListSchema";
 import { userIdSchema } from "../schemas/userIdSchema";
 import { verifyTempSessionTokenService } from "@/features/auth/services/verifyTempSessionTokenService";
 import { generateDeviceId } from "@/features/auth/services/devices";
 import { registerUserService } from "../services/registerUserService";
 import { computeHmac } from "@/features/shared/lib/encryption";
-
-const emptyLocalList: LocalList = {
-	listId: "",
-	items: [],
-	subLists: [],
-};
 
 export async function registerUser({
 	email,
@@ -69,10 +63,10 @@ export async function registerUser({
 	const headersList = await headers();
 	const userAgent = headersList.get("user-agent") || "Unknown";
 	const deviceId = generateDeviceId(userAgent);
-	const parsedLocalList = localListSchema.safeParse(localUserList);
-	const normalizedLocalList = parsedLocalList.success
-		? parsedLocalList.data
-		: emptyLocalList;
+	// 一括検証だと 1 件でも壊れていれば全件を捨てることになり、登録直後に localStorage が
+	// クリアされて正常なデータまで失われる。要素単位で検証し、壊れた分だけ落とす。
+	const { localList: normalizedLocalList } =
+		parseLocalListLeniently(localUserList);
 	const validLocalListItems = normalizedLocalList.items;
 	const validLocalSubLists = normalizedLocalList.subLists;
 

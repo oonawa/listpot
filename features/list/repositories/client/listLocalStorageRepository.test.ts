@@ -32,7 +32,9 @@ function setupStore() {
 	return store;
 }
 
-function makeItem(overrides?: Partial<Extract<ListItem, { isWatched: false }>>): Extract<ListItem, { isWatched: false }> {
+function makeItem(
+	overrides?: Partial<Extract<ListItem, { isWatched: false }>>,
+): Extract<ListItem, { isWatched: false }> {
 	return {
 		listItemId: "item-1",
 		title: "テストアイテム",
@@ -177,6 +179,66 @@ describe("parseLocalList", () => {
 		expect(result.listId).toBe(TEST_LIST_ID);
 		expect(result.items).toEqual([]);
 		expect(result.subLists).toEqual([]);
+		expect(result.hasInvalidData).toBe(false);
+	});
+
+	// 検証が全件一括だと、1 件でも壊れていれば空リストが返り、同期が 0 件で「成功」して
+	// localStorage がクリアされる（＝データ消失）。item 単位で落とし、壊れていたことを
+	// 呼び出し側へ伝える。
+	it("不正な item が混ざっていても正常な item は残る", () => {
+		const store = setupStore();
+		const valid = makeItem({
+			listItemId: "22222222-2222-4222-b222-222222222222",
+			title: "正常なアイテム",
+		});
+		const broken = { ...makeItem(), listItemId: "not-a-uuid" };
+		store.set(listpotAtom, {
+			list: { listId: TEST_LIST_ID, items: [valid, broken] },
+			subLists: [],
+		});
+
+		const result = parseLocalList(store);
+
+		expect(result.items.map((item) => item.title)).toEqual(["正常なアイテム"]);
+		expect(result.hasInvalidData).toBe(true);
+	});
+
+	it("listId が不正でも正常な item は残る", () => {
+		const store = setupStore();
+		const valid = makeItem({
+			listItemId: "22222222-2222-4222-b222-222222222222",
+			title: "正常なアイテム",
+		});
+		store.set(listpotAtom, {
+			list: { listId: "not-a-uuid", items: [valid] },
+			subLists: [],
+		});
+
+		const result = parseLocalList(store);
+
+		expect(result.listId).toBe("");
+		expect(result.items.map((item) => item.title)).toEqual(["正常なアイテム"]);
+		expect(result.hasInvalidData).toBe(true);
+	});
+
+	it("不正なサブリストは落とし、正常なサブリストは残す", () => {
+		const store = setupStore();
+		store.set(listpotAtom, {
+			list: { listId: TEST_LIST_ID, items: [] },
+			subLists: [
+				{
+					subListId: "33333333-3333-4333-b333-333333333333",
+					name: "正常",
+					listItemIds: [],
+				},
+				{ subListId: "not-a-uuid", name: "不正", listItemIds: [] },
+			],
+		});
+
+		const result = parseLocalList(store);
+
+		expect(result.subLists.map((subList) => subList.name)).toEqual(["正常"]);
+		expect(result.hasInvalidData).toBe(true);
 	});
 });
 

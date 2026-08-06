@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { db } from "@/db/client";
 import type { Result } from "@/features/shared/types/Result";
 import {
@@ -35,7 +35,10 @@ export const createSubListWithItemService = async ({
 		await insertSubListItem(tx, { subListId: subList.id, listItemId });
 	});
 
-	revalidateTag(`list:${listId}`, "default");
+	// 作成直後に router.push で新しいサブリストへ遷移し、そこからメインリストへ戻る導線が
+	// ある。revalidateTag は Data Cache のみ無効化するため、温まっているメインリストの
+	// Router Cache に作成したサブリストが現れない。read-your-own-writes の updateTag を使う。
+	updateTag(`list:${listId}`);
 
 	return {
 		success: true,

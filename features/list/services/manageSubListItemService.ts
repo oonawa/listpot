@@ -66,15 +66,29 @@ export const manageSubListItemService = async ({
 		};
 	}
 
-	if (action === "add") {
-		await db.transaction(async (tx) => {
-			await insertSubListItem(tx, {
-				subListId: subList.id,
-				listItemId: listItem.id,
+	try {
+		if (action === "add") {
+			await db.transaction(async (tx) => {
+				await insertSubListItem(tx, {
+					subListId: subList.id,
+					listItemId: listItem.id,
+				});
 			});
-		});
-	} else {
-		await deleteSubListItem(subList.id, listItem.id);
+		} else {
+			await deleteSubListItem(subList.id, listItem.id);
+		}
+	} catch (error) {
+		// 他サービスと同じく、想定外のエラーも Result で返して Server Action の外へ
+		// 例外を出さない。
+		console.error(error);
+		return {
+			success: false,
+			error: {
+				code: "INTERNAL_ERROR",
+				message:
+					"システムの内部エラーにより、サブリストを更新できませんでした。",
+			},
+		};
 	}
 
 	revalidateTag(`list:${subList.listId}`, "default");
