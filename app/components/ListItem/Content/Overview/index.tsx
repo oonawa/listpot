@@ -8,6 +8,12 @@ type Props = {
 export default function Overview({ overview }: Props) {
 	const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
 
+	// TMDB に日本語のあらすじが無い作品では overview が空文字になる。
+	// 空の本文と「つづきを読む」だけを見せても意味が無いため、見出しごと出さない。
+	if (!overview) {
+		return null;
+	}
+
 	return (
 		<>
 			<h3 className="pt-6 text-md font-bold text-foreground-dark-1">

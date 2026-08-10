@@ -4,12 +4,22 @@ import { getDirectorsFromExternalMovieDatabase } from "@/features/movieDatabase/
 import { getMovieFromExternalMovieDatabase } from "@/features/movieDatabase/actions/getMovieFromExternalMovieDatabase";
 import { searchExternalMovieDatabase } from "@/features/movieDatabase/actions/searchExternalMovieDatabase";
 import { normalizeTitle } from "@/features/movieDatabase/helpers/normalizeTitle";
-import { TMDB_IMAGE_BASE_URL } from "@/app/consts";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
 import type { TmdbSearchResponse } from "@/features/movieDatabase/types/TmdbResponse";
 
 type Props = {
 	movie: DraftListItem | ListItem;
+};
+
+/** 公開日が欠落・不正な作品では公開年も持たせない。 */
+const toReleaseYear = (releaseDate: string | undefined) => {
+	if (!releaseDate) {
+		return undefined;
+	}
+
+	const releaseYear = new Date(releaseDate).getFullYear();
+
+	return Number.isNaN(releaseYear) ? undefined : releaseYear;
 };
 
 export const useExternalMovieDatabase = ({ movie }: Props) => {
@@ -77,21 +87,24 @@ export const useExternalMovieDatabase = ({ movie }: Props) => {
 				const {
 					movieId,
 					title,
-					release_date,
-					runtime,
-					poster_path,
-					backdrop_path,
+					releaseDate,
+					runningMinutes,
+					posterImage,
+					backgroundImage,
 					overview,
 				} = officialMovieInfo.data;
+
+				const releaseYear = toReleaseYear(releaseDate);
 
 				const details = {
 					movieId,
 					officialTitle: title,
-					backgroundImage: TMDB_IMAGE_BASE_URL + backdrop_path,
-					posterImage: TMDB_IMAGE_BASE_URL + poster_path,
-					runningMinutes: runtime,
-					releaseYear: new Date(release_date).getFullYear(),
-					releaseDate: release_date,
+					backgroundImage,
+					posterImage,
+					// TMDB が値を持たない項目は details から落とし、UI 側で出さない。
+					...(runningMinutes === undefined ? {} : { runningMinutes }),
+					...(releaseDate === undefined ? {} : { releaseDate }),
+					...(releaseYear === undefined ? {} : { releaseYear }),
 					director: directorsInfo.data,
 					externalDatabaseMovieId: externalApiMovieId,
 					overview,

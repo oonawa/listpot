@@ -9,13 +9,16 @@ export type ListItemBase = {
 	details?: {
 		movieId: number;
 		officialTitle: string;
+		/** TMDB が背景画像を持たない作品では空文字 */
 		backgroundImage: string;
+		/** TMDB がポスターを持たない作品では空文字 */
 		posterImage: string;
 		director: string[];
-		runningMinutes: number;
-		releaseYear: number;
+		runningMinutes?: number;
+		releaseYear?: number;
 		releaseDate?: string;
 		externalDatabaseMovieId: number;
+		/** TMDB に日本語のあらすじが無い作品では空文字 */
 		overview: string;
 	};
 };

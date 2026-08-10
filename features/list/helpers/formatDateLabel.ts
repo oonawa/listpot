@@ -7,17 +7,17 @@ export const formatDateLabel = (
 	sortKey: SortKey | undefined,
 ): string => {
 	if (sortKey === "releaseDate") {
-		if (!movie.details) {
-			return "公開日のデータがありません";
-		}
-		if (movie.details.releaseDate) {
+		if (movie.details?.releaseDate) {
 			return formatFullDate(new Date(movie.details.releaseDate));
 		}
-		return `${movie.details.releaseYear}年`;
+		if (movie.details?.releaseYear !== undefined) {
+			return `${movie.details.releaseYear}年`;
+		}
+		return "公開日のデータがありません";
 	}
 
 	if (sortKey === "runningMinutes") {
-		if (!movie.details) {
+		if (movie.details?.runningMinutes === undefined) {
 			return "再生時間のデータがありません";
 		}
 		return `${movie.details.runningMinutes}分`;
