@@ -29,17 +29,22 @@ const httpUrlSchema = z.url().refine(
 	{ message: "URLは http または https のみ許可されます。" },
 );
 
+// TMDB は作品によって画像・上映時間・公開日・あらすじを持っていない。
+// details は付加情報であり、欠けていても作品そのものの登録は成立させる。
+// 欠落の表現は、画像とあらすじが空文字、上映時間と公開年/公開日が undefined。
+const missingImageSchema = z.literal("");
+
 const listItemDetailsSchema = z.object({
 	movieId: z.number().int().positive(),
 	officialTitle: z.string().min(1),
-	backgroundImage: httpUrlSchema,
-	posterImage: httpUrlSchema,
+	backgroundImage: z.union([httpUrlSchema, missingImageSchema]),
+	posterImage: z.union([httpUrlSchema, missingImageSchema]),
 	director: z.array(z.string().min(1)),
-	runningMinutes: z.number().int().positive(),
-	releaseYear: z.number().int(),
+	runningMinutes: z.number().int().positive().optional(),
+	releaseYear: z.number().int().optional(),
 	releaseDate: z.string().optional(),
 	externalDatabaseMovieId: z.number().int().nonnegative(),
-	overview: z.string().min(1),
+	overview: z.string(),
 });
 
 const listItemBaseSchema = z.object({
