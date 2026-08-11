@@ -3,6 +3,7 @@ import { startTransition, useActionState } from "react";
 import { getDirectorsFromExternalMovieDatabase } from "@/features/movieDatabase/actions/getDirectorsFromExternalMovieDatabase";
 import { getMovieFromExternalMovieDatabase } from "@/features/movieDatabase/actions/getMovieFromExternalMovieDatabase";
 import { searchExternalMovieDatabase } from "@/features/movieDatabase/actions/searchExternalMovieDatabase";
+import { normalizeTitle } from "@/features/movieDatabase/helpers/normalizeTitle";
 import { TMDB_IMAGE_BASE_URL } from "@/app/consts";
 import type { DraftListItem, ListItem } from "@/features/list/types/ListItem";
 import type { TmdbSearchResponse } from "@/features/movieDatabase/types/TmdbResponse";
@@ -12,18 +13,6 @@ type Props = {
 };
 
 export const useExternalMovieDatabase = ({ movie }: Props) => {
-	const normalizeTitle = (title: string) => {
-		return title
-			.replace(/･/g, "・")
-			.replace(/\(/g, "（")
-			.replace(/\)/g, "）")
-			.replace(/\s+/g, " ")
-			.replace(/（吹替版）/g, "")
-			.replace(/（字幕版）/g, "")
-			.replace(/™/g, "")
-			.trim();
-	};
-
 	const normalizedTitle = normalizeTitle(movie.title);
 
 	const [
