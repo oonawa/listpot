@@ -16,7 +16,9 @@ export default function MovieDetail({
 	serviceName,
 	isDetailView,
 }: Props) {
-	const poster = (
+	// TMDB が片方の画像しか持たない作品がある。無い側は img ごと描かない
+	// （src 無しの img が枠だけ残るのを避ける）。
+	const poster = posterImage ? (
 		<img
 			className="object-contain h-full rounded-sm"
 			src={withTmdbImageSize(posterImage, "w342")}
@@ -24,15 +26,15 @@ export default function MovieDetail({
 			decoding="async"
 			fetchPriority="high"
 		/>
-	);
-	const background = (
+	) : null;
+	const background = backgroundImage ? (
 		<img
 			className="w-full h-full object-contain rounded-2xl"
 			src={withTmdbImageSize(backgroundImage, "w780")}
 			alt=""
 			decoding="async"
 		/>
-	);
+	) : null;
 	const logo = serviceName ? <ServiceLogo serviceName={serviceName} /> : null;
 
 	// isDetailView 時は、背景タップでポスター/ロゴをトグルできる client 版を描画する

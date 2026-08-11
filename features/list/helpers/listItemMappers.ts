@@ -48,6 +48,8 @@ export const mapListItemRow = (
 		return base;
 	}
 
+	const releaseYear = getReleaseYear(row.releaseDate);
+
 	return {
 		...base,
 		details: {
@@ -56,21 +58,19 @@ export const mapListItemRow = (
 			backgroundImage: row.backgroundImage,
 			posterImage: row.posterImage,
 			director: movieDirectors.get(row.movieId) ?? [],
-			runningMinutes: row.runningMinutes,
-			releaseYear: getReleaseYear(row.releaseDate),
-			releaseDate: row.releaseDate,
+			// DB は notNull のため「不明」を 0 / "" で保存している。読み出し時に
+			// undefined へ戻し、UI が「0分」「NaN年」を描かないようにする。
+			...(row.runningMinutes > 0 ? { runningMinutes: row.runningMinutes } : {}),
+			...(releaseYear === undefined ? {} : { releaseYear }),
+			...(row.releaseDate === "" ? {} : { releaseDate: row.releaseDate }),
 			externalDatabaseMovieId: Number(row.externalDatabaseMovieId),
 			overview: row.overview,
 		},
 	};
 };
 
-const getReleaseYear = (releaseDate: string) => {
+const getReleaseYear = (releaseDate: string): number | undefined => {
 	const releaseYear = new Date(releaseDate).getFullYear();
 
-	if (Number.isNaN(releaseYear)) {
-		throw Error(`releaseDate の形式が不正です: ${releaseDate}`);
-	}
-
-	return releaseYear;
+	return Number.isNaN(releaseYear) ? undefined : releaseYear;
 };

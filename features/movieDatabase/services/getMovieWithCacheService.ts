@@ -7,9 +7,59 @@ import {
 import type { TmdbMovieResponse } from "../types/TmdbResponse";
 import { fetchWithRetry } from "../utils/fetchWithRetry";
 
-export type OfficialMovieInfo = TmdbMovieResponse & {
+/**
+ * TMDB のレスポンスとキャッシュ行を、呼び出し側がそのまま details へ写せる形へ正規化したもの。
+ *
+ * TMDB の生の形（poster_path 等の「パス」）を返すと、キャッシュ行は完全な URL を
+ * 保持しているためベース URL の付与が二重になる。画像 URL の組み立てはここへ集約する。
+ */
+export type OfficialMovieInfo = {
 	movieId: number;
+	title: string;
+	/** TMDB が画像を持たない作品では空文字 */
+	backgroundImage: string;
+	/** TMDB が画像を持たない作品では空文字 */
+	posterImage: string;
+	/** TMDB が上映時間を持たない作品では undefined */
+	runningMinutes?: number;
+	/** TMDB が公開日を持たない作品では undefined */
+	releaseDate?: string;
+	/** TMDB に日本語のあらすじが無い作品では空文字 */
+	overview: string;
 };
+
+/** TMDB が画像を持たない作品では path が null になる。 */
+function toImageUrl(path: string | null): string {
+	return path ? TMDB_IMAGE_BASE_URL + path : "";
+}
+
+function toOfficialMovieInfo({
+	movieId,
+	title,
+	backgroundImage,
+	posterImage,
+	runningMinutes,
+	releaseDate,
+	overview,
+}: {
+	movieId: number;
+	title: string;
+	backgroundImage: string;
+	posterImage: string;
+	runningMinutes: number | null;
+	releaseDate: string;
+	overview: string;
+}): OfficialMovieInfo {
+	return {
+		movieId,
+		title,
+		backgroundImage,
+		posterImage,
+		...(runningMinutes ? { runningMinutes } : {}),
+		...(releaseDate ? { releaseDate } : {}),
+		overview,
+	};
+}
 
 export async function getMovieWithCache(
 	externalApiMovieId: number,
@@ -27,16 +77,15 @@ export async function getMovieWithCache(
 	if (cachedMovie) {
 		return {
 			success: true,
-			data: {
+			data: toOfficialMovieInfo({
 				movieId: cachedMovie.movieId,
-				id: externalApiMovieId,
 				title: cachedMovie.title,
-				backdrop_path: cachedMovie.backgroundImage,
-				poster_path: cachedMovie.posterImage,
-				runtime: cachedMovie.runningMinutes,
-				release_date: cachedMovie.releaseDate,
+				backgroundImage: cachedMovie.backgroundImage,
+				posterImage: cachedMovie.posterImage,
+				runningMinutes: cachedMovie.runningMinutes,
+				releaseDate: cachedMovie.releaseDate,
 				overview: cachedMovie.overview,
-			},
+			}),
 		};
 	}
 
@@ -69,18 +118,21 @@ export async function getMovieWithCache(
 
 	const data: TmdbMovieResponse = await fetchResult.data.json();
 
-	const { movieId } = await upsertMovieWithCache(
-		{
-			externalDatabaseMovieId,
-			title: data.title,
-			backgroundImage: TMDB_IMAGE_BASE_URL + data.backdrop_path,
-			posterImage: TMDB_IMAGE_BASE_URL + data.poster_path,
-			runningMinutes: data.runtime,
-			releaseDate: data.release_date,
-			overview: data.overview,
-		},
-		now,
-	);
+	// movies_table は notNull のため、欠落は空文字 / 0 として保存する。
+	const movieData = {
+		externalDatabaseMovieId,
+		title: data.title,
+		backgroundImage: toImageUrl(data.backdrop_path),
+		posterImage: toImageUrl(data.poster_path),
+		runningMinutes: data.runtime ?? 0,
+		releaseDate: data.release_date,
+		overview: data.overview,
+	};
 
-	return { success: true, data: { movieId, ...data } };
+	const { movieId } = await upsertMovieWithCache(movieData, now);
+
+	return {
+		success: true,
+		data: toOfficialMovieInfo({ movieId, ...movieData }),
+	};
 }

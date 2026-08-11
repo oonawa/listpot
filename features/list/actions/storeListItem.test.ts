@@ -202,7 +202,8 @@ async function assertMovieRecordFromTmdbDetails(movie: ListItem) {
 				eq(moviesTable.title, movie.details.officialTitle),
 				eq(moviesTable.backgroundImage, movie.details.backgroundImage),
 				eq(moviesTable.posterImage, movie.details.posterImage),
-				eq(moviesTable.runningMinutes, movie.details.runningMinutes),
+				// 上映時間が不明な作品は movies_table に 0 で保存されている
+				eq(moviesTable.runningMinutes, movie.details.runningMinutes ?? 0),
 			),
 		);
 
@@ -676,6 +677,94 @@ describe("storeMovie", () => {
 		await assertDirectorsTableHasNoRecords();
 	});
 
+	// TMDB は作品によって overview / runtime / release_date / 画像パスを持っていない。
+	// あらすじや上映時間は付加情報でしかないため、欠けていても登録自体は成立させる。
+	describe("TMDBにデータが欠けている作品", () => {
+		let seededMovieId: number;
+
+		beforeEach(async () => {
+			// details の取得時点で movies_table には既にレコードがある（getMovieWithCache）。
+			// storeListItem はその movieId を list_item_movie_match_table へ紐づけるだけ。
+			const [seededMovie] = await db
+				.insert(moviesTable)
+				.values({
+					externalDatabaseMovieId: "422565",
+					title: "サイキックビジョン 邪願霊",
+					backgroundImage: "",
+					posterImage: "",
+					runningMinutes: 0,
+					releaseDate: "",
+					overview: "",
+				})
+				.returning({ id: moviesTable.id });
+			seededMovieId = seededMovie.id;
+		});
+
+		const buildMovieWithDetails = (
+			details: Partial<NonNullable<ListItem["details"]>>,
+		): ListItem => ({
+			listItemId: crypto.randomUUID(),
+			title: "邪願霊",
+			url: "https://video-share.unext.jp/video/title/SID0054488",
+			serviceSlug: "unext",
+			serviceName: "U-NEXT",
+			createdAt: new Date(),
+			isWatched: false,
+			watchedAt: null,
+			details: {
+				movieId: seededMovieId,
+				officialTitle: "サイキックビジョン 邪願霊",
+				backgroundImage: `${TMDB_IMAGE_BASE_URL}/kNvBnBpAdiWjMuKrTdgMxvsCJ7v.jpg`,
+				posterImage: `${TMDB_IMAGE_BASE_URL}/dJaGRvJTMhqXpQnJzZTLoAgqNAV.jpg`,
+				director: ["石井てるよし"],
+				runningMinutes: 74,
+				releaseYear: 1988,
+				releaseDate: "1988-06-25",
+				externalDatabaseMovieId: 422565,
+				overview: "あらすじ",
+				...details,
+			},
+		});
+
+		async function assertStoredWithDetails(movie: ListItem) {
+			const result = await storeListItem({
+				publicListId: testPublicListId,
+				movie,
+			});
+
+			expect(result.success).toBe(true);
+			if (!result.success) {
+				return;
+			}
+			expect(result.data.details).toEqual(movie.details);
+		}
+
+		it("あらすじが空文字でも登録できる", async () => {
+			await assertStoredWithDetails(buildMovieWithDetails({ overview: "" }));
+		});
+
+		it("上映時間が不明でも登録できる", async () => {
+			await assertStoredWithDetails(
+				buildMovieWithDetails({ runningMinutes: undefined }),
+			);
+		});
+
+		it("公開年・公開日が不明でも登録できる", async () => {
+			await assertStoredWithDetails(
+				buildMovieWithDetails({
+					releaseYear: undefined,
+					releaseDate: undefined,
+				}),
+			);
+		});
+
+		it("ポスター・背景画像が無くても登録できる", async () => {
+			await assertStoredWithDetails(
+				buildMovieWithDetails({ backgroundImage: "", posterImage: "" }),
+			);
+		});
+	});
+
 	describe("URLスキーム制限（XSS対策）", () => {
 		const buildMovieWithUrl = (url: string): ListItem => ({
 			listItemId: crypto.randomUUID(),
@@ -715,9 +804,7 @@ describe("storeMovie", () => {
 		it("data: スキームのURLは登録できずVALIDATION_ERRORを返す", async () => {
 			const result = await storeListItem({
 				publicListId: testPublicListId,
-				movie: buildMovieWithUrl(
-					"data:text/html,<script>alert(1)</script>",
-				),
+				movie: buildMovieWithUrl("data:text/html,<script>alert(1)</script>"),
 			});
 
 			expect(result).toEqual({
@@ -762,7 +849,10 @@ describe("storeMovie", () => {
 		it("未認証ユーザーは作品を登録できずUNAUTHORIZED_ERRORを返す", async () => {
 			mockCurrentUserId.mockResolvedValue({
 				success: false,
-				error: { code: "UNAUTHORIZED_ERROR", message: "ログインしていません。" },
+				error: {
+					code: "UNAUTHORIZED_ERROR",
+					message: "ログインしていません。",
+				},
 			});
 
 			const result = await storeListItem({
